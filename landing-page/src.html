@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FloodCrew · Live flood and ice alerts for the Tees Valley</title>
+<meta name="description" content="Live flood, snow and ice hazards across the Tees Valley, with safer routes for driving and walking.">
+<meta name="theme-color" content="#07051A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#07051A;color:#1C1530;font-family:Inter,system-ui,sans-serif}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer}
+.mono{font-family:'JetBrains Mono',monospace}
+.hero{position:relative;height:100vh;height:100svh;min-height:640px;overflow:hidden;background:radial-gradient(ellipse at 50% 60%,#1A1240 0%,#0B0824 55%,#05030F 100%);color:#fff}
+#globe,#local{position:absolute;inset:0;width:100%;height:100%;display:block}
+#local{opacity:0;pointer-events:none}
+#globe{opacity:0;transition:opacity .9s ease;touch-action:pan-y;outline:none}
+#globe.ready{opacity:1}
+.fade{transition:opacity 1s ease,transform 1s ease}
+.topbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:16px;padding:18px 28px;z-index:5}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .mk{width:38px;height:38px;border-radius:11px;background:#9A7FD9;display:flex;align-items:center;justify-content:center}
+.logo b{font-size:18px;letter-spacing:-.02em}
+.logo small{display:block;font-size:12px;color:#CFC4F2;font-weight:400}
+.navl{display:flex;gap:4px;flex-wrap:wrap}
+.navl a{color:#E7E0FB;text-decoration:none;font-size:14px;font-weight:500;padding:10px 12px;border-radius:10px}
+.navl a:hover{background:rgba(255,255,255,.08)}
+.sp{flex:1}
+.btn{height:44px;padding:0 18px;border-radius:12px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:0}
+.btn.pri{background:#9A7FD9;color:#160F33}
+.btn.pri:hover{background:#B29BEA}
+.btn.gh{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.22)}
+.btn.gh:hover{background:rgba(255,255,255,.14)}
+.caption{position:absolute;left:var(--gx,50%);bottom:56px;transform:translateX(-50%);font-size:14px;color:#D9D0F7;letter-spacing:.02em;display:flex;align-items:center;gap:10px;white-space:nowrap;z-index:4;pointer-events:none}
+.caption .pd{width:8px;height:8px;border-radius:50%;background:#9A7FD9;box-shadow:0 0 12px #9A7FD9}
+.copy{position:absolute;inset:0;display:flex;align-items:center;padding:96px 28px 110px;z-index:4;pointer-events:none;transition:opacity .6s ease}
+.copy.dim{opacity:0}
+.copy .in{width:100%;max-width:1280px;margin:0 auto}
+.copy .box{max-width:540px;display:flex;flex-direction:column;gap:18px;pointer-events:auto}
+.status{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;background:rgba(224,89,42,.16);border:1px solid rgba(224,89,42,.5);color:#FFD9C8;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;backdrop-filter:blur(6px)}
+.status i{width:9px;height:9px;border-radius:50%;background:#FF6B35;box-shadow:0 0 10px #FF6B35}
+h1{margin:0;font-size:clamp(38px,5.2vw,72px);line-height:1.02;letter-spacing:-.035em;font-weight:800;text-shadow:0 4px 30px rgba(0,0,0,.45)}
+.lead{margin:0;max-width:620px;font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:#E3DCF8;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+.ctas{display:flex;gap:10px;flex-wrap:wrap}
+.back{position:absolute;right:24px;bottom:24px;z-index:6}
+.scrollcue{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:4;color:#CFC4F2;font-size:13px;text-decoration:none;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px}
+.scrollcue:hover{background:rgba(255,255,255,.08)}
+.mlabel{position:absolute;left:0;top:0;z-index:3;transform:translate(16px,-50%);font-size:12px;font-weight:600;color:#fff;background:rgba(14,10,36,.78);border:1px solid rgba(255,255,255,.2);padding:4px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid #B29BEA;outline-offset:2px}
+.hint{font-size:13px;color:#6B57A8}
+.err{color:#FFD0C2;font-size:13px;min-height:18px}
+.ok2{color:#C8F2D9}
+.legend{position:absolute;right:24px;bottom:84px;z-index:4;background:rgba(14,10,36,.62);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(8px);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;font-size:12px;color:#E3DCF8;opacity:0}
+.legend.on{opacity:1}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+/* below the fold */
+.page{background:#F3F1F8;color-scheme:light}
+.wrap{max-width:1280px;margin:0 auto;padding:44px 28px}
+.grid{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.card{background:#fff;border:1px solid #E4E1EE;border-radius:20px}
+h2{margin:0;font-size:26px;letter-spacing:-.02em}
+.sub{color:#6B57A8;font-size:14px;margin-top:2px}
+.alerts{flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.agrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.agrid{grid-template-columns:1fr}}
+.al{padding:16px 18px;display:flex;gap:12px;transition:border-color .2s,box-shadow .2s}
+.al:hover{border-color:#C9B8EE;box-shadow:0 6px 20px rgba(62,47,110,.08)}
+.al .d{flex:0 0 12px;height:12px;border-radius:50%;margin-top:5px}
+.al b{display:block;font-size:15px;line-height:1.35;color:#2A1F52}
+.al p{margin:4px 0 8px;font-size:14px;line-height:1.45;color:#4B3A7A}
+.tag{font-size:11px;font-weight:600;border-radius:999px;padding:3px 9px}
+.filters{display:flex;gap:4px;background:#fff;border:1px solid #E0DCEA;border-radius:999px;padding:4px}
+.filters button{height:38px;padding:0 14px;border-radius:999px;border:0;background:transparent;color:#3E2F6E;font-size:14px;font-weight:600}
+.filters button.on{background:#3E2F6E;color:#fff}
+.route{flex:1 1 320px;max-width:420px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.route label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#3E2F6E}
+.route input{height:46px;border:1.5px solid #D9CCF5;background:#fff;border-radius:12px;padding:0 14px;font-size:15px;color:#2A1F52;font-family:inherit;outline:none}
+.route input:focus,.sub2 input:focus{border-color:#9A7FD9;box-shadow:0 0 0 3px rgba(154,127,217,.22)}
+.route input::placeholder,.sub2 input::placeholder{color:#A18FD6}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{height:44px;border-radius:12px;border:1.5px solid #D9CCF5;background:#fff;color:#3E2F6E;font-size:14px;font-weight:600}
+.seg button.on{background:#EFE9FB;border-color:#9A7FD9}
+.res{background:#EFE9FB;border-radius:14px;padding:14px;font-size:14px;line-height:1.5;color:#2A1F52}
+.sub2{background:#3E2F6E;color:#fff;border-radius:16px;padding:16px 20px;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:space-between}
+.sub2 h2{font-size:18px}
+.sub2 .err{min-height:0}
+.sub2 input{background:#fff;-webkit-appearance:none;appearance:none;height:42px;border:1.5px solid transparent;border-radius:12px;padding:0 14px;font-size:15px;min-width:220px;font-family:inherit;color:#2A1F52;outline:none}
+/* what to do, report, gritting */
+.tipb{display:inline-flex;align-items:center;gap:4px;min-height:40px;margin-top:4px;padding:0 2px;border:0;background:transparent;color:#5B45A0;font-size:13px;font-weight:600}
+.tipb svg{transition:transform .2s}
+.tipb[aria-expanded="true"] svg{transform:rotate(180deg)}
+.tips{margin:0 0 4px;padding-left:18px;font-size:13.5px;line-height:1.5;color:#4B3A7A}
+.tips li+li{margin-top:2px}
+.panel{flex:1 1 320px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.panel form{display:flex;flex-direction:column;gap:14px}
+.panel label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#3E2F6E}
+.panel .opt{font-weight:500;color:#7A68B3}
+.panel input,.panel textarea{height:46px;border:1.5px solid #D9CCF5;background:#fff;border-radius:12px;padding:0 14px;font-size:15px;color:#2A1F52;font-family:inherit;outline:none;width:100%}
+.panel textarea{height:auto;min-height:84px;padding:12px 14px;resize:vertical;line-height:1.45}
+.panel input[type=file]{height:auto;padding:10px 12px;font-size:14px;color:#4B3A7A}
+.panel input:focus,.panel textarea:focus{border-color:#9A7FD9;box-shadow:0 0 0 3px rgba(154,127,217,.22)}
+.panel input::placeholder,.panel textarea::placeholder{color:#A18FD6}
+.rtype{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.rtype button{height:44px;border-radius:12px;border:1.5px solid #D9CCF5;background:#fff;color:#3E2F6E;font-size:14px;font-weight:600}
+.rtype button.on{background:#EFE9FB;border-color:#9A7FD9}
+.gpill{font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap}
+@media (max-width:480px){.rtype{grid-template-columns:1fr 1fr}.panel{padding:18px}.panel input,.panel textarea{font-size:16px}}
+footer{background:#fff;border-top:1px solid #E4E1EE}
+footer .wrap{padding:22px 28px;display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between;font-size:13px;color:#6B57A8}
+footer a{color:#5B45A0}
+@media (max-width:900px){.copy{align-items:flex-end;padding-bottom:76px}.caption{display:none}.legend{display:none}.scrollcue{display:none}}
+@media (max-width:720px){.navl{display:none}.topbar{padding:14px 16px}.logo small{display:none}.signlbl{display:none}.copy{padding-left:16px;padding-right:16px}.back{right:16px;bottom:16px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<section class="hero" id="top" aria-label="Live hazards intro">
+<canvas id="globe" tabindex="0" role="img" aria-label="Interactive globe showing global winds and weather. Drag or use the arrow keys to spin it. Press Enter to zoom into the Tees Valley."></canvas>
+<canvas id="local" aria-hidden="true"></canvas>
+<div class="mlabel" id="mlabel" aria-hidden="true">Tees Valley</div>
+<div class="topbar">
+<div class="logo"><span class="mk"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#160F33" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 15c2.5-2.5 4.5-2.5 6 0s3.5 2.5 6 0 4.5-2.5 6 0"/><path d="M3 9c2.5-2.5 4.5-2.5 6 0s3.5 2.5 6 0 4.5-2.5 6 0"/></svg></span><span><b>FloodCrew</b><small>Live hazard alerts · Tees Valley</small></span></div>
+<nav class="navl" aria-label="Sections"><a href="#alerts">Alerts</a><a href="#route">Check my route</a><a href="#subscribe">Get alerts</a></nav>
+<div class="sp"></div>
+<a class="btn gh" href="../web-app/index.html" aria-label="Crew login"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span class="signlbl">Crew login</span></a>
+</div>
+<div class="copy" id="copy"><div class="in"><div class="box">
+<h1>Know before<br>you go.</h1>
+<p class="lead">Flooded streets, icy hills and closed paths across the Tees Valley, live. Get a safer route for driving or walking.</p>
+<div class="ctas"><button class="btn pri" id="primary" type="button">Zoom into the Tees Valley</button><a class="btn gh" href="#alerts">See live alerts</a></div>
+</div></div></div>
+<div class="caption fade" id="caption" aria-live="polite"><span class="pd"></span><span id="capTxt">Loading globe…</span></div>
+<div class="legend fade" id="legend" aria-hidden="true"><span><i style="background:#4D9BE6"></i>Flood water</span><span><i style="background:#FF6B35"></i>Flood warning</span><span><i style="background:#9CD3FF"></i>Ice risk</span><span><i style="background:#fff"></i>Snow</span></div>
+<button class="btn gh back" id="back" type="button" hidden>Back to globe</button>
+<a class="scrollcue" href="#alerts">Scroll for live alerts<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a>
+</section>
+
+<div class="page">
+<div class="wrap">
+<div class="grid">
+<section class="alerts" id="alerts" aria-label="Alerts near you">
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between">
+<div><h2>Alerts near you</h2><div class="sub">Tees Valley · live</div></div>
+<div class="filters" role="group" aria-label="Filter alerts"><button type="button" class="on" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="flood">Flood</button><button type="button" aria-pressed="false" data-f="ice">Snow &amp; ice</button></div>
+</div>
+<div class="agrid" id="agrid" aria-live="polite"></div>
+</section>
+<section class="card route" id="route" aria-labelledby="routeH">
+<h2 id="routeH" style="font-size:22px">Check my route</h2>
+<form id="routeForm" style="display:flex;flex-direction:column;gap:14px" novalidate>
+<label>From<input id="rFrom" value="Stockton town centre" autocomplete="off" required></label>
+<label>To<input id="rTo" value="Yarm High Street" autocomplete="off" required></label>
+<div class="seg" role="group" aria-label="Travel mode"><button type="button" class="on" aria-pressed="true" data-t="drive">Driving</button><button type="button" aria-pressed="false" data-t="walk">Walking</button></div>
+<button class="btn pri" type="submit" style="height:48px;justify-content:center;background:#3E2F6E;color:#fff">Find a safer route</button>
+</form>
+<div id="res" aria-live="polite"></div>
+</section>
+</div>
+</div>
+<div class="wrap" style="padding-top:0;padding-bottom:32px">
+<div class="grid">
+<section class="card panel" id="report" aria-labelledby="repH">
+<div><h2 id="repH" style="font-size:22px">Report a problem</h2><div class="sub">Goes straight to the council team.</div></div>
+<form id="repForm" novalidate>
+<div class="rtype" role="group" aria-label="Problem type"><button type="button" class="on" aria-pressed="true" data-r="flood">Flood</button><button type="button" aria-pressed="false" data-r="ice">Ice</button><button type="button" aria-pressed="false" data-r="drain">Drain</button><button type="button" aria-pressed="false" data-r="other">Other</button></div>
+<label>Location<input id="repLoc" placeholder="Street or postcode" autocomplete="off" required aria-describedby="repMsg"></label>
+<label><span>Photo <span class="opt">(optional)</span></span><input id="repPhoto" type="file" accept="image/*"></label>
+<label><span>Note <span class="opt">(optional)</span></span><textarea id="repNote" rows="3" maxlength="300" placeholder="What did you see?"></textarea></label>
+<button class="btn pri" type="submit" style="height:48px;justify-content:center;background:#3E2F6E;color:#fff">Send report</button>
+</form>
+<div id="repMsg" aria-live="polite"></div>
+</section>
+<section class="card panel" id="grit" aria-labelledby="gritH">
+<div><h2 id="gritH" style="font-size:22px">Is my road gritted?</h2><div class="sub">Sample data for 6 local roads.</div></div>
+<form id="gritForm" novalidate>
+<label>Postcode or street<input id="gritQ" placeholder="e.g. TS15 or Durham Road" autocomplete="off"></label>
+<button class="btn pri" type="submit" style="height:48px;justify-content:center;background:#3E2F6E;color:#fff">Check</button>
+</form>
+<div id="gritRes" aria-live="polite" style="display:flex;flex-direction:column;gap:10px"></div>
+</section>
+</div>
+</div>
+<div class="wrap" style="padding-top:0;padding-bottom:32px">
+<section class="sub2" id="subscribe" aria-label="Get alerts">
+<div><h2 style="color:#fff">Get alerts for your street</h2><p style="margin:2px 0 0;color:#DCD2F5;font-size:14px">Flood, ice and closures near you.</p></div>
+<form id="subForm" style="display:flex;flex-direction:column;gap:4px" novalidate>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+<label style="display:flex;align-items:center;font-size:13px;color:#DCD2F5"><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Postcode</span><input id="pc" placeholder="e.g. TS1 1AA" autocomplete="postal-code" aria-describedby="pcMsg"></label>
+<button class="btn pri" type="submit" style="height:42px">Subscribe</button>
+</div>
+<span class="err" id="pcMsg" aria-live="polite"></span>
+</form>
+</section>
+</div>
+<footer><div class="wrap"><span>Advisory only · demo data</span><b style="color:#2A1F52">Emergency: <a href="tel:999">999</a> · Floodline: <a href="tel:03459881188">0345 988 1188</a></b><span style="display:flex;gap:18px;flex-wrap:wrap"><a href="https://check-for-flooding.service.gov.uk/">Environment Agency</a><a href="https://www.metoffice.gov.uk/weather/warnings-and-advice/uk-warnings">Met Office</a></span></div></footer>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+var LAND=@@LAND@@;
+</script>
+<script>
+(function(){
+/* ---------- below-the-fold bits ---------- */
+var AL=[{k:'flood',c:'#E0592A',t:'Avoid Yarm High Street',b:'Flooding from 15:30. Use the A19.',s:'FloodCrew',tm:'14:52',tp:['Never drive or walk through flood water. 30 cm can move a car.','Use the A19 instead.','Live nearby? Move valuables upstairs.']},
+{k:'ice',c:'#3B82F6',t:'Ingleby Barwick hill is icy',b:'Not gritted yet. Avoid if you can.',s:'FloodCrew',tm:'14:40',tp:['Take another route if you can.','Drive slowly in a high gear and leave a big gap.','Walking? Wear shoes with good grip.']},
+{k:'flood',c:'#E0592A',t:'Flood warning: Tees at Yarm',b:'Riverside paths closed.',s:'Official',tm:'13:40',tp:['Keep away from the riverbank and closed paths.','Have a torch, charger and medicines ready.','Call Floodline on 0345 988 1188 for updates.']},
+{k:'ice',c:'#2E9E62',t:'Hospital route gritted',b:'Side streets may still be icy.',s:'Gritting',tm:'13:15',tp:['Stick to main gritted roads.','Take care on side streets and pavements.','Allow extra time.']}];
+var TG={Official:['#FBE8D6','#8A3A0E'],FloodCrew:['#EFE9FB','#3E2F6E'],Gritting:['#DCF3E6','#14532D']};
+function drawAlerts(f){document.getElementById('agrid').innerHTML=AL.map(function(a,i){if(f!=='all'&&a.k!==f)return '';return '<article class="card al"><span class="d" style="background:'+a.c+'"></span><span><b>'+a.t+'</b><p>'+a.b+'</p><span class="tag" style="background:'+TG[a.s][0]+';color:'+TG[a.s][1]+'">'+a.s+'</span> <span class="mono" style="font-size:11px;color:#7A68B3">'+a.tm+'</span><br><button type="button" class="tipb" aria-expanded="false" aria-controls="tp'+i+'">What to do<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><ul class="tips" id="tp'+i+'" hidden>'+a.tp.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></span></article>';}).join('');}
+document.getElementById('agrid').addEventListener('click',function(e){var b=e.target.closest('.tipb');if(!b)return;var open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',open);document.getElementById(b.getAttribute('aria-controls')).hidden=!open;});
+document.querySelectorAll('.filters button').forEach(function(b){b.onclick=function(){document.querySelectorAll('.filters button').forEach(function(x){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b);});drawAlerts(b.dataset.f);};});
+var RT={drive:'<b>+6 min</b> · via A19 and Eaglescliffe',walk:'<b>+9 min</b> · via Bridge Road footpath'},mode='drive';
+document.querySelectorAll('.seg button').forEach(function(b){b.onclick=function(){mode=b.dataset.t;document.querySelectorAll('.seg button').forEach(function(x){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b);});};});
+document.getElementById('routeForm').onsubmit=function(e){e.preventDefault();var f=document.getElementById('rFrom').value.trim(),t=document.getElementById('rTo').value.trim(),r=document.getElementById('res');
+ if(!f||!t){r.innerHTML='<p class="hint" style="margin:0;color:#A1340C">Add a start and destination.</p>';return;}
+ r.innerHTML='<div class="res"><span style="display:block;font-size:12px;font-weight:700;color:#5B45A0;margin-bottom:2px">Safer route</span>'+RT[mode]+'</div>';};
+document.getElementById('subForm').onsubmit=function(e){e.preventDefault();var v=document.getElementById('pc').value.trim(),m=document.getElementById('pcMsg');
+ if(!/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i.test(v)){m.className='err';m.textContent='Enter a valid postcode, e.g. TS1 1AA.';document.getElementById('pc').setAttribute('aria-invalid','true');return;}
+ document.getElementById('pc').removeAttribute('aria-invalid');m.className='err ok2';m.textContent='Subscribed for '+v.toUpperCase()+'.';};
+drawAlerts('all');
+
+/* ---------- report a problem (saved to localStorage for the staff app) ---------- */
+var rType='flood',RK='floodcrew_reports';
+document.querySelectorAll('.rtype button').forEach(function(b){b.onclick=function(){rType=b.dataset.r;document.querySelectorAll('.rtype button').forEach(function(x){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b);});};});
+function shrink(file,cb){if(!file)return cb('');var fr=new FileReader();fr.onerror=function(){cb('');};
+ fr.onload=function(){var im=new Image();im.onerror=function(){cb('');};im.onload=function(){var s=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.7));};im.src=fr.result;};
+ fr.readAsDataURL(file);}
+function saveRep(r){var a=[];try{a=JSON.parse(localStorage.getItem(RK)||'[]');if(!Array.isArray(a))a=[];}catch(e){a=[];}
+ a.push(r);while(a.length>50)a.shift();
+ try{localStorage.setItem(RK,JSON.stringify(a));return 'ok';}catch(e){}
+ if(r.photo){r.photo='';try{localStorage.setItem(RK,JSON.stringify(a));return 'nophoto';}catch(e){}}
+ return 'fail';}
+document.getElementById('repForm').onsubmit=function(e){e.preventDefault();var loc=document.getElementById('repLoc'),m=document.getElementById('repMsg'),f=document.getElementById('repPhoto').files[0],btn=this.querySelector('[type=submit]'),form=this;
+ if(!loc.value.trim()){loc.setAttribute('aria-invalid','true');m.innerHTML='<p class="hint" style="margin:0;color:#A1340C">Add a location.</p>';loc.focus();return;}
+ loc.removeAttribute('aria-invalid');btn.disabled=true;
+ shrink(f,function(photo){var res=saveRep({id:Date.now().toString(36),type:rType,loc:loc.value.trim().slice(0,120),note:document.getElementById('repNote').value.trim().slice(0,300),photo:photo,ts:new Date().toISOString()});btn.disabled=false;
+  if(res==='fail'){m.innerHTML='<p class="hint" style="margin:0;color:#A1340C">Couldn’t send. Please try again.</p>';return;}
+  m.innerHTML='<div class="res"><b>Thanks – sent to the council</b>'+((f&&!photo)||res==='nophoto'?'<br><span style="font-size:13px;color:#6B57A8">Photo couldn’t be added.</span>':'')+'</div>';
+  form.reset();document.querySelector('.rtype button').click();});};
+
+/* ---------- is my road gritted? (sample data) ---------- */
+var GR=[{n:'Yarm High Street',a:'Yarm',pc:'TS15',last:'Today 05:40',next:'Today 18:00',ok:1},
+{n:'Ingleby Way (hill)',a:'Ingleby Barwick',pc:'TS17',last:'Yesterday 19:10',next:'Today 16:30',ok:0},
+{n:'Hardwick Road (hospital route)',a:'Stockton',pc:'TS19',last:'Today 13:15',next:'Today 21:00',ok:1},
+{n:'Durham Road',a:'Stockton',pc:'TS18',last:'Today 06:05',next:'Today 18:30',ok:1},
+{n:'Yarm Road',a:'Eaglescliffe',pc:'TS16',last:'Today 05:55',next:'Today 18:15',ok:1},
+{n:'Linthorpe Road',a:'Middlesbrough',pc:'TS1',last:'Yesterday 20:30',next:'Today 17:00',ok:0}];
+document.getElementById('gritForm').onsubmit=function(e){e.preventDefault();var q=document.getElementById('gritQ').value.trim(),out=document.getElementById('gritRes'),u=q.toUpperCase().replace(/\s+/g,''),hits;
+ if(!q){out.innerHTML='<p class="hint" style="margin:0;color:#A1340C">Enter a postcode or street.</p>';return;}
+ if(/^[A-Z]{1,2}\d[A-Z\d]?(\d[A-Z]{2})?$/.test(u)){var od=u.length>4&&/\d[A-Z]{2}$/.test(u)?u.slice(0,-3):u;hits=GR.filter(function(r){return r.pc===od;});}
+ else{var l=q.toLowerCase();hits=GR.filter(function(r){return (r.n+' '+r.a).toLowerCase().indexOf(l)>=0;});}
+ if(!hits.length){out.innerHTML='<p class="hint" style="margin:0">No sample data for that road. Try TS15, TS17 or Durham Road.</p>';return;}
+ out.innerHTML=hits.map(function(r){return '<div class="res"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><b>'+r.n+'</b><span class="gpill" style="background:'+(r.ok?'#DCF3E6;color:#14532D':'#FBE8D6;color:#8A3A0E')+'">'+(r.ok?'Gritted today':'Not gritted today')+'</span></div><span style="font-size:13px;color:#6B57A8">'+r.a+' · '+r.pc+'</span><br>Last gritted: <b>'+r.last+'</b><br>Next run: <b>'+r.next+'</b></div>';}).join('');};
+
+/* ---------- helpers ---------- */
+var D=Math.PI/180;
+function rnd(a,b){return a+Math.random()*(b-a);}
+function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
+// value noise
+var P=new Uint8Array(512);(function(){var p=[];for(var i=0;i<256;i++)p[i]=i;for(i=255;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=p[i];p[i]=p[j];p[j]=t;}for(i=0;i<512;i++)P[i]=p[i&255];})();
+function hash(x,y){return P[(P[x&255]+y)&511]/255;}
+function vnoise(x,y){var xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi;var u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+ var a=hash(xi,yi),b=hash(xi+1,yi),c=hash(xi,yi+1),d=hash(xi+1,yi+1);return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v;}
+function fbm(x,y,o){var s=0,a=.5,f=1;for(var i=0;i<o;i++){s+=a*vnoise(x*f,y*f);f*=2;a*=.5;}return s;}
+
+/* ---------- topojson decode ---------- */
+function rings(){var t=LAND.transform,arcs=LAND.arcs.map(function(a){var x=0,y=0;return a.map(function(p){x+=p[0];y+=p[1];return [x*t.scale[0]+t.translate[0],y*t.scale[1]+t.translate[1]];});});
+ function ring(ix){var pts=[];ix.forEach(function(i,k){var a=i<0?arcs[~i].slice().reverse():arcs[i];for(var j=k?1:0;j<a.length;j++)pts.push(a[j]);});return pts;}
+ var out=[];var geoms=LAND.objects.land.geometries||[LAND.objects.land];
+ geoms.forEach(function(g){if(g.type==='Polygon')g.arcs.forEach(function(r){out.push(ring(r));});else if(g.type==='MultiPolygon')g.arcs.forEach(function(p){p.forEach(function(r){out.push(ring(r));});});});
+ return out;}
+function landPath(ctx,W,H,R){
+ R.forEach(function(r){
+  var pts=[],prev=null,off=0;
+  r.forEach(function(p){var lon=p[0];if(prev!==null){var d=lon+off-prev;if(d>180)off-=360;else if(d<-180)off+=360;}var L=lon+off;pts.push([L,p[1]]);prev=L;});
+  var span=pts[pts.length-1][0]-pts[0][0];
+  if(Math.abs(span)>180){var pole=pts.reduce(function(s,p){return s+p[1];},0)<0?-90:90;pts.push([pts[pts.length-1][0],pole]);pts.push([pts[0][0],pole]);}
+  [-360,0,360].forEach(function(o){ctx.moveTo((pts[0][0]+o+180)/360*W,(90-pts[0][1])/180*H);for(var i=1;i<pts.length;i++)ctx.lineTo((pts[i][0]+o+180)/360*W,(90-pts[i][1])/180*H);ctx.closePath();});
+ });
+}
+
+/* ---------- textures ---------- */
+function makeEarth(){
+ var W=4096,H=2048,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+ var og=x.createLinearGradient(0,0,0,H);og.addColorStop(0,'#0A2340');og.addColorStop(.25,'#0D3560');og.addColorStop(.5,'#0F4475');og.addColorStop(.75,'#0D3560');og.addColorStop(1,'#0A2340');
+ x.fillStyle=og;x.fillRect(0,0,W,H);
+ for(var i=0;i<9000;i++){x.fillStyle='rgba('+(Math.random()<.5?'20,70,120':'6,30,60')+','+rnd(.05,.18)+')';var r=rnd(4,40);x.beginPath();x.arc(rnd(0,W),rnd(0,H),r,0,7);x.fill();}
+ var R=rings();
+ x.save();x.beginPath();landPath(x,W,H,R);x.clip('evenodd');
+ var lg=x.createLinearGradient(0,0,0,H);
+ [[0,'#EEF3F6'],[.1,'#E4EBEF'],[.15,'#8E9C8A'],[.2,'#4C6E4A'],[.27,'#5F8A4F'],[.33,'#7E8F55'],[.37,'#BFA772'],[.41,'#C9AE78'],[.45,'#8C9A52'],[.5,'#2F6B3A'],[.55,'#3E7A3F'],[.6,'#9C9A5E'],[.64,'#BCA06C'],[.7,'#6F8C55'],[.78,'#7E8C76'],[.83,'#DCE5EA'],[1,'#F2F6F8']].forEach(function(s){lg.addColorStop(s[0],s[1]);});
+ x.fillStyle=lg;x.fillRect(0,0,W,H);
+ for(i=0;i<60000;i++){var cx=rnd(0,W),cy=rnd(0,H),lat=90-cy/H*180,al=Math.abs(lat);
+  var col=al>66?'255,255,255':(al>23&&al<35&&Math.random()<.6)?'214,186,130':(Math.random()<.5?'30,70,35':'120,140,80');
+  x.fillStyle='rgba('+col+','+rnd(.04,.14)+')';x.beginPath();x.ellipse(cx,cy,rnd(3,22),rnd(2,12),rnd(0,3),0,6.283);x.fill();}
+ x.restore();
+ x.strokeStyle='rgba(220,235,255,.28)';x.lineWidth=1.5;x.beginPath();landPath(x,W,H,R);x.stroke();
+ // arctic sea ice
+ for(i=0;i<5000;i++){var yy=rnd(0,H*.075);x.fillStyle='rgba(235,242,248,'+rnd(.15,.5)*(1-yy/(H*.075))+')';x.beginPath();x.arc(rnd(0,W),yy,rnd(6,30),0,7);x.fill();}
+ var s=document.createElement('canvas');s.width=1024;s.height=512;var sx=s.getContext('2d');sx.fillStyle='#6a6a6a';sx.fillRect(0,0,1024,512);sx.fillStyle='#000';sx.beginPath();landPath(sx,1024,512,R);sx.fill('evenodd');
+ return {map:c,spec:s};
+}
+function makeClouds(){
+ var W=1024,H=512,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d'),img=x.createImageData(W,H),d=img.data;
+ var sLon=-14,sLat=57;
+ for(var j=0;j<H;j++){var lat=90-j/H*180;var band=.62-.16*Math.exp(-Math.pow((Math.abs(lat)-55)/14,2))-.1*Math.exp(-Math.pow(lat/8,2));
+  for(var i=0;i<W;i++){var lon=i/W*360-180;var u=i/W*12,v=j/H*6;
+   var dx=(lon-sLon)*Math.cos(sLat*D),dy=lat-sLat,r=Math.sqrt(dx*dx+dy*dy),sw=0;
+   if(r<26){var a=Math.atan2(dy,dx)+3.2*Math.exp(-r/9);var rr=r;u=(sLon+rr*Math.cos(a)/Math.cos(sLat*D)+180)/360*12;v=(90-(sLat+rr*Math.sin(a)))/180*6;sw=.12*Math.exp(-r/10);}
+   var n=fbm(u,v,5)+sw;var al=clamp((n-band)/.18,0,1);al=al*al*(3-2*al);
+   var k=(j*W+i)*4;d[k]=d[k+1]=d[k+2]=255;d[k+3]=al*235;}}
+ x.putImageData(img,0,0);return c;
+}
+
+/* ---------- three scene ---------- */
+var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+var gc=document.getElementById('globe'),lc=document.getElementById('local');
+var renderer,scene,camera,group,earth,clouds,wind,windGeo,snow,snowGeo,ok=!!window.THREE;
+var TRAIL=8,NW=1800,wp=[],NS=900,sp=[];
+function ll(lat,lon,r){var ph=(90-lat)*D,th=(lon+180)*D;return [-r*Math.sin(ph)*Math.cos(th),r*Math.cos(ph),r*Math.sin(ph)*Math.sin(th)];}
+function windAt(lat,lon,t){var phi=lat*D;var u=-Math.cos(6*phi)*.9+.25*Math.sin(lon*D*3+t*.2)*Math.cos(phi);var v=.3*Math.sin(lon*D*2+lat*D*4+t*.15)*Math.cos(phi);
+ var dx=(lon+14)*Math.cos(57*D),dy=lat-57,r=Math.sqrt(dx*dx+dy*dy);if(r<28){var s=1.1*Math.exp(-r/10);u+=-dy/(r+1)*s*3;v+=dx/(r+1)*s*3;}
+ var m=Math.hypot(u,v);if(m>1.5){u*=1.5/m;v*=1.5/m;}
+ return [u,v];}
+function initThree(){
+ renderer=new THREE.WebGLRenderer({canvas:gc,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+ scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(40,1,.01,100);camera.position.set(0,0,5.4);
+ group=new THREE.Group();scene.add(group);
+ var tex=makeEarth();
+ var map=new THREE.CanvasTexture(tex.map);map.anisotropy=8;var spec=new THREE.CanvasTexture(tex.spec);
+ earth=new THREE.Mesh(new THREE.SphereGeometry(1,128,128),new THREE.MeshPhongMaterial({map:map,specularMap:spec,specular:new THREE.Color('#5577aa'),shininess:22}));
+ group.add(earth);
+ clouds=new THREE.Mesh(new THREE.SphereGeometry(1.012,96,96),new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(makeClouds()),transparent:true,depthWrite:false}));
+ group.add(clouds);
+ var atm=new THREE.Mesh(new THREE.SphereGeometry(1.11,64,64),new THREE.ShaderMaterial({side:THREE.BackSide,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,
+  vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:'varying vec3 vN;void main(){float i=pow(0.72-dot(vN,vec3(0.0,0.0,1.0)),3.2);gl_FragColor=vec4(0.62,0.55,1.0,1.0)*i*1.6;}'}));
+ scene.add(atm);
+ var inner=new THREE.Mesh(new THREE.SphereGeometry(1.02,64,64),new THREE.ShaderMaterial({transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,
+  vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:'varying vec3 vN;void main(){float i=pow(1.0-abs(dot(vN,vec3(0.0,0.0,1.0))),3.0);gl_FragColor=vec4(0.55,0.7,1.0,1.0)*i*0.55;}'}));
+ scene.add(inner);
+ var sun=new THREE.DirectionalLight(0xffffff,1.25);sun.position.set(-3,1.6,2.4);scene.add(sun);scene.add(new THREE.AmbientLight(0x4a4270,.75));
+ // stars
+ var sg=new THREE.BufferGeometry(),sv=[];for(var i=0;i<2200;i++){var v=new THREE.Vector3(rnd(-1,1),rnd(-1,1),rnd(-1,1)).normalize().multiplyScalar(rnd(25,40));sv.push(v.x,v.y,v.z);}
+ sg.setAttribute('position',new THREE.Float32BufferAttribute(sv,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xd8d0ff,size:.06,transparent:true,opacity:.8})));
+ // wind
+ windGeo=new THREE.BufferGeometry();var wpos=new Float32Array(NW*(TRAIL-1)*2*3),wcol=new Float32Array(NW*(TRAIL-1)*2*3);
+ windGeo.setAttribute('position',new THREE.BufferAttribute(wpos,3));windGeo.setAttribute('color',new THREE.BufferAttribute(wcol,3));
+ wind=new THREE.LineSegments(windGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));group.add(wind);
+ for(i=0;i<NW;i++){var p={lat:rnd(-75,75),lon:rnd(-180,180),life:rnd(0,120),tr:[]};for(var k=0;k<TRAIL;k++)p.tr.push([p.lat,p.lon]);wp.push(p);}
+ // snow
+ snowGeo=new THREE.BufferGeometry();var spos=new Float32Array(NS*3);snowGeo.setAttribute('position',new THREE.BufferAttribute(spos,3));
+ var sc=document.createElement('canvas');sc.width=sc.height=32;var sx=sc.getContext('2d');var rg=sx.createRadialGradient(16,16,0,16,16,16);rg.addColorStop(0,'rgba(255,255,255,1)');rg.addColorStop(.4,'rgba(255,255,255,.6)');rg.addColorStop(1,'rgba(255,255,255,0)');sx.fillStyle=rg;sx.fillRect(0,0,32,32);
+ snow=new THREE.Points(snowGeo,new THREE.PointsMaterial({size:.012,map:new THREE.CanvasTexture(sc),transparent:true,depthWrite:false,opacity:0}));group.add(snow);
+ for(i=0;i<NS;i++)sp.push({lat:rnd(48,64),lon:rnd(-22,12),h:rnd(1.0,1.08),s:rnd(.0004,.0011)});
+ resize();
+}
+function updWind(t,dt){
+ var pos=windGeo.attributes.position.array,col=windGeo.attributes.color.array,n=0;
+ for(var i=0;i<NW;i++){var p=wp[i];p.life-=dt*60;
+  if(p.life<=0||Math.abs(p.lat)>80){p.lat=rnd(-75,75);p.lon=rnd(-180,180);p.life=rnd(60,160);for(var k=0;k<TRAIL;k++){p.tr[k][0]=p.lat;p.tr[k][1]=p.lon;}}
+  var w=windAt(p.lat,p.lon,t),sp2=dt*60*.32;
+  p.lon+=w[0]*sp2/Math.max(.25,Math.cos(p.lat*D));p.lat+=w[1]*sp2;if(p.lon>180)p.lon-=360;if(p.lon<-180)p.lon+=360;
+  p.tr.pop();p.tr.unshift([p.lat,p.lon]);
+  var fadeIn=clamp((160-p.life)/30,0,1)*clamp(p.life/30,0,1);
+  for(k=0;k<TRAIL-1;k++){var a=p.tr[k],b=p.tr[k+1];if(Math.abs(a[1]-b[1])>90){a=b;}
+   var A=ll(a[0],a[1],1.025),B=ll(b[0],b[1],1.025);pos.set(A,n*3);pos.set(B,n*3+3);
+   var f=(1-k/(TRAIL-1))*fadeIn,f2=(1-(k+1)/(TRAIL-1))*fadeIn;var spd=Math.min(1,Math.hypot(w[0],w[1])/1.6);
+   col[n*3]=(.55+.45*spd)*f;col[n*3+1]=(.6+.25*spd)*f;col[n*3+2]=f;col[n*3+3]=(.55+.45*spd)*f2;col[n*3+4]=(.6+.25*spd)*f2;col[n*3+5]=f2;n+=2;}
+ }
+ windGeo.attributes.position.needsUpdate=true;windGeo.attributes.color.needsUpdate=true;
+}
+function updSnow(dt){var pos=snowGeo.attributes.position.array;for(var i=0;i<NS;i++){var s=sp[i];s.h-=s.s*dt*60;s.lon+=.02*dt*60;if(s.h<1.004){s.h=rnd(1.04,1.09);s.lat=rnd(48,64);s.lon=rnd(-22,12);}pos.set(ll(s.lat,s.lon,s.h),i*3);}snowGeo.attributes.position.needsUpdate=true;}
+var offK=1;function layoutOff(){var w=gc.clientWidth,h=gc.clientHeight;return w>=900?[-.2*w,0]:[0,.17*h];}
+function applyOff(){if(!camera)return;var w=gc.clientWidth,h=gc.clientHeight,o=layoutOff();camera.setViewOffset(w,h,o[0]*offK,o[1]*offK,w,h);document.querySelector('.hero').style.setProperty('--gx',(50-o[0]/w*100*offK)+'%');}
+function resize(){var w=gc.clientWidth,h=gc.clientHeight;if(renderer){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();applyOff();}
+ var dpr=Math.min(2,window.devicePixelRatio||1);lc.width=w*dpr;lc.height=h*dpr;}
+window.addEventListener('resize',resize);
+
+/* ---------- local Tees scene (2D) ---------- */
+var RIVER='M90 700 C140 610 120 550 190 510 C260 470 250 410 330 370 C400 335 430 290 500 278 C580 265 600 238 660 208 C720 178 780 182 840 138 C880 108 900 70 1000 48';
+var ROADS=['M0 430 L300 390 L520 310 L1000 340','M270 700 L335 480 L385 300 L420 0','M610 700 L650 430 L705 210 L725 0','M0 190 L400 215 L700 165 L1000 95'];
+var MINOR=['M100 300 L500 260','M150 620 L560 560','M450 100 L520 640','M800 200 L860 600','M0 540 L250 520','M560 60 L900 300','M60 360 L240 330','M520 420 L760 400','M700 520 L980 470','M180 120 L330 40'];
+var BLOCKS=[];for(var bi=0;bi<260;bi++)BLOCKS.push([rnd(0,1000),rnd(0,700),rnd(8,26),rnd(6,18),rnd(0,.5)]);
+var FLOOD=[[185,520,95,62],[350,362,105,64],[255,445,60,38],[620,236,70,40]];
+var flakes=[];for(var fi=0;fi<520;fi++)flakes.push({x:Math.random(),y:Math.random(),z:rnd(.3,1),ph:rnd(0,6.28)});
+var streaks=[];for(fi=0;fi<70;fi++)streaks.push({x:Math.random(),y:Math.random(),l:rnd(.04,.12),s:rnd(.15,.35)});
+
+function drawLocal(now){
+ var c=lc.getContext('2d'),W=lc.width,H=lc.height,el=(now-LS)/1000;lc.style.opacity=reduce?1:Math.min(1,el/1.1);
+ var PT=lc.clientWidth<900,sc=PT?W/1000*Math.max(1.45,H/W*.55):Math.max(W/1000,H/700)*1.12,zoom=1+.55*Math.pow(1-clamp(el/2.6,0,1),2);var s=sc*zoom;
+ c.setTransform(1,0,0,1,0,0);c.fillStyle='#1B2230';c.fillRect(0,0,W,H);
+ var fx=PT?380:330,fy=PT?430:455,SX=W*(PT?.5:.66),SY=H*(PT?.3:.47);c.setTransform(s,0,0,s,SX-fx*s,SY-fy*s);
+ // land texture
+ c.fillStyle='#232C3A';c.fillRect(-200,-200,1400,1100);
+ [[60,80,160,90],[520,470,190,120],[770,430,150,110],[40,610,200,120]].forEach(function(p){c.fillStyle='#24382F';c.beginPath();c.roundRect?c.roundRect(p[0],p[1],p[2],p[3],18):c.rect(p[0],p[1],p[2],p[3]);c.fill();});
+ BLOCKS.forEach(function(b){c.fillStyle='rgba(120,130,160,'+(.08+b[4]*.12)+')';c.fillRect(b[0],b[1],b[2],b[3]);});
+ c.lineCap='round';c.lineJoin='round';
+ MINOR.forEach(function(d){c.strokeStyle='#2F394A';c.lineWidth=3;c.stroke(new Path2D(d));});
+ ROADS.forEach(function(d){var p=new Path2D(d);c.strokeStyle='#384356';c.lineWidth=11;c.stroke(p);c.strokeStyle='#4A5568';c.lineWidth=6;c.stroke(p);});
+ // gritted roads glow
+ var gr=clamp((el-3.2)/1.5,0,1);if(gr>0){c.save();c.globalAlpha=gr;c.shadowColor='#5BE39A';c.shadowBlur=12;c.strokeStyle='#3FC37E';c.lineWidth=4;['M650 430 L705 210','M520 310 L760 325'].forEach(function(d){c.stroke(new Path2D(d));});c.restore();}
+ // river swelling
+ var rise=clamp((el-.6)/5,0,1);var rv=new Path2D(RIVER);
+ c.strokeStyle='#2C5F95';c.lineWidth=18+16*rise;c.stroke(rv);c.strokeStyle='#3E7AB8';c.lineWidth=9+10*rise;c.stroke(rv);
+ // flood water
+ FLOOD.forEach(function(f,i){var k=clamp(rise*1.25-i*.12,0,1);if(k<=0)return;var rx=f[2]*k,ry=f[3]*k;
+  c.save();c.beginPath();for(var a=0;a<=64;a++){var t=a/64*6.283,wob=1+.08*Math.sin(t*5+el*1.3+i)+.05*Math.sin(t*9-el*.9);var x=f[0]+Math.cos(t)*rx*wob,y=f[1]+Math.sin(t)*ry*wob;a?c.lineTo(x,y):c.moveTo(x,y);}c.closePath();
+  var g=c.createRadialGradient(f[0],f[1],0,f[0],f[1],Math.max(rx,ry));g.addColorStop(0,'rgba(77,155,230,.78)');g.addColorStop(.75,'rgba(64,135,210,.62)');g.addColorStop(1,'rgba(64,135,210,.25)');
+  c.fillStyle=g;c.fill();c.clip();
+  c.strokeStyle='rgba(200,230,255,.22)';c.lineWidth=1.4;for(var y=f[1]-ry;y<f[1]+ry;y+=7){c.beginPath();for(var x=f[0]-rx;x<f[0]+rx;x+=6){var yy=y+Math.sin(x*.07+el*2+y)*1.8;x===f[0]-rx?c.moveTo(x,yy):c.lineTo(x,yy);}c.stroke();}
+  c.restore();
+  c.strokeStyle='rgba(160,210,255,'+(.35+.2*Math.sin(el*2+i))+')';c.lineWidth=1.5;c.setLineDash([6,5]);c.beginPath();c.ellipse(f[0],f[1],rx*1.04,ry*1.04,0,0,6.283);c.stroke();c.setLineDash([]);
+ });
+ // ice zone
+ var ice=clamp((el-2.2)/1.6,0,1);if(ice>0){c.save();c.globalAlpha=ice;var g2=c.createRadialGradient(430,560,0,430,560,95);g2.addColorStop(0,'rgba(170,215,255,.45)');g2.addColorStop(1,'rgba(170,215,255,0)');c.fillStyle=g2;c.beginPath();c.ellipse(430,560,100,56,0,0,6.283);c.fill();
+  for(var q=0;q<40;q++){var qa=q*2.4,qr=(q*13)%90;c.fillStyle='rgba(235,248,255,'+(.25+.25*Math.sin(el*3+q))+')';c.beginPath();c.arc(430+Math.cos(qa)*qr,560+Math.sin(qa)*qr*.55,1.6,0,6.283);c.fill();}c.restore();}
+ // labels
+ c.font='600 12px Inter, sans-serif';c.fillStyle='rgba(200,205,225,.55)';
+ [['YARM',96,612],['STOCKTON-ON-TEES',430,402],['THORNABY',560,300],['MIDDLESBROUGH',700,270],['INGLEBY BARWICK',372,628]].forEach(function(l){c.fillText(l[0].split('').join(String.fromCharCode(8202)),l[1],l[2]);});
+ // pins
+ var pins=[[168,528,'#FF6B35','Yarm · flood warning',1.2],[352,352,'#FFB020','Stockton · rising',1.8],[470,520,'#9CD3FF','Ingleby hill · ice',3.0]];
+ pins.forEach(function(p){var k=clamp((el-p[4])/.6,0,1);if(!k)return;c.save();c.globalAlpha=k;var pr=(el*1.2+p[4])%1.6/1.6;
+  c.fillStyle=p[2];c.globalAlpha=k*(1-pr)*.5;c.beginPath();c.arc(p[0],p[1],8+pr*26,0,6.283);c.fill();c.globalAlpha=k;
+  c.beginPath();c.arc(p[0],p[1],8,0,6.283);c.fill();c.strokeStyle='#fff';c.lineWidth=3;c.stroke();
+  c.font='600 13px Inter, sans-serif';var tw=c.measureText(p[3]).width,m=c.getTransform(),lx=p[0]+14;if(m.a*(lx+tw+18)+m.e>W-16*(W/lc.clientWidth))lx=p[0]-14-tw-18;c.fillStyle='rgba(14,10,36,.78)';c.beginPath();c.roundRect?c.roundRect(lx,p[1]-30,tw+18,24,12):c.rect(lx,p[1]-30,tw+18,24);c.fill();c.fillStyle='#fff';c.fillText(p[3],lx+9,p[1]-13);c.restore();});
+ // screen-space weather
+ c.setTransform(1,0,0,1,0,0);
+ var dpr=W/lc.clientWidth;
+ streaks.forEach(function(st){st.x+=st.s*.006;st.y+=st.s*.0025;if(st.x>1.1){st.x=-.1;st.y=Math.random();}
+  c.strokeStyle='rgba(220,215,255,.10)';c.lineWidth=1.2*dpr;c.beginPath();c.moveTo(st.x*W,st.y*H);c.lineTo((st.x-st.l)*W,(st.y-st.l*.4)*H);c.stroke();});
+ flakes.forEach(function(f){f.y+=.0016*f.z+.0006;f.x+=.0009*f.z+Math.sin(el*1.5+f.ph)*.0004;if(f.y>1.02){f.y=-.02;f.x=Math.random();}if(f.x>1.02)f.x=-.02;
+  c.fillStyle='rgba(255,255,255,'+(.35+.55*f.z)+')';c.beginPath();c.arc(f.x*W,f.y*H,(.8+2.4*f.z*f.z)*dpr,0,6.283);c.fill();});
+ // vignette
+ var vg=c.createRadialGradient(W/2,H*.45,Math.min(W,H)*.25,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,'rgba(7,5,26,0)');vg.addColorStop(1,'rgba(7,5,26,.8)');c.fillStyle=vg;c.fillRect(0,0,W,H);
+ var lw=lc.clientWidth>=900;var sg=lw?c.createLinearGradient(0,0,W*.6,0):c.createLinearGradient(0,H*.35,0,H);sg.addColorStop(0,'rgba(7,5,26,.82)');sg.addColorStop(1,'rgba(7,5,26,0)');if(!lw){sg=c.createLinearGradient(0,H,0,H*.35);sg.addColorStop(0,'rgba(7,5,26,.9)');sg.addColorStop(1,'rgba(7,5,26,0)');}c.fillStyle=sg;c.fillRect(0,0,W,H);
+ var bt=c.createLinearGradient(0,H*.45,0,H);bt.addColorStop(0,'rgba(7,5,26,0)');bt.addColorStop(1,'rgba(7,5,26,.85)');c.fillStyle=bt;c.fillRect(0,H*.45,W,H*.55);
+}
+
+/* ---------- interaction + timeline ---------- */
+var phase='idle',lat0=54.6,lon0=-1.2,last=null,LS=null,shown=false,heroVis=true,staticDone=false;
+var drag=null,vy=0,vx=0,idleT=0,zoomS=null,camZ=5.4,marker=null,ray=null,interacted=false;
+var cap=document.getElementById('capTxt'),capEl=document.getElementById('caption'),copy=document.getElementById('copy'),prim=document.getElementById('primary'),back=document.getElementById('back'),ml=document.getElementById('mlabel');
+var CAP='Drag to spin · click the globe to zoom into the Tees Valley';
+function azAt0(){var p=ll(lat0,lon0,1);return Math.atan2(p[0],p[2]);}
+function addMarker(){
+ var c=document.createElement('canvas');c.width=c.height=64;var x=c.getContext('2d');
+ var g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,120,60,1)');g.addColorStop(.25,'rgba(255,107,53,.95)');g.addColorStop(.32,'rgba(255,255,255,.9)');g.addColorStop(.4,'rgba(255,107,53,.35)');g.addColorStop(1,'rgba(255,107,53,0)');
+ x.fillStyle=g;x.fillRect(0,0,64,64);
+ marker=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthWrite:false,transparent:true}));
+ var p=ll(lat0,lon0,1.03);marker.position.set(p[0],p[1],p[2]);marker.scale.set(.12,.12,1);group.add(marker);
+ ray=new THREE.Raycaster();
+}
+function onGlobe(cx,cy){if(!ray)return false;var r=gc.getBoundingClientRect();ray.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-(cy-r.top)/r.height*2+1},camera);return ray.intersectObject(earth).length>0;}
+function startZoom(){
+ if(phase!=='idle')return;if(!ok||reduce){toLocal();LS-=4000;return;}phase='zoom';
+ var cur=group.rotation.y,tgt=-azAt0();while(tgt-cur>Math.PI)tgt-=Math.PI*2;while(tgt-cur<-Math.PI)tgt+=Math.PI*2;
+ zoomS={t:0,ry0:cur,ry1:tgt,rx0:group.rotation.x,z0:camera.position.z};
+ cap.textContent='Zooming into the Tees Valley';copy.classList.add('dim');gc.style.cursor='default';ml.style.opacity=0;
+}
+function toLocal(){phase='local';LS=performance.now();staticDone=false;gc.style.transition='opacity 1.2s ease';gc.style.opacity=0;capEl.style.opacity=0;ml.style.opacity=0;
+ setTimeout(function(){if(phase==='local'){capEl.style.display='none';copy.classList.remove('dim');document.getElementById('legend').classList.add('on');}},reduce?0:900);
+ prim.textContent='Check my route';back.hidden=false;gc.setAttribute('tabindex','-1');}
+function baseZ(){return gc.clientWidth<700?8.2:5.4;}
+function toGlobe(){
+ phase='idle';shown=false;camZ=baseZ();camera&&(camera.position.z=camZ);offK=1;applyOff();vx=vy=0;idleT=0;
+ if(group)group.rotation.x=.35;if(marker)marker.material.opacity=1;if(snow)snow.material.opacity=0;
+ lc.style.opacity=0;gc.style.transition='opacity .8s ease';gc.style.opacity='';capEl.style.display='';capEl.style.opacity=1;cap.textContent=CAP;
+ document.getElementById('legend').classList.remove('on');copy.classList.remove('dim');gc.style.cursor='grab';
+ prim.textContent='Zoom into the Tees Valley';back.hidden=true;gc.setAttribute('tabindex','0');
+}
+// pointer: drag anywhere on the canvas, click only on the globe itself
+gc.style.cursor='grab';
+gc.addEventListener('pointerdown',function(e){if(phase!=='idle')return;drag={x:e.clientX,y:e.clientY,moved:0};try{gc.setPointerCapture(e.pointerId);}catch(_){}gc.style.cursor='grabbing';vx=vy=0;});
+gc.addEventListener('pointermove',function(e){
+ if(!drag){if(phase==='idle')gc.style.cursor=onGlobe(e.clientX,e.clientY)?'pointer':'grab';return;}
+ var dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;drag.moved+=Math.abs(dx)+Math.abs(dy);
+ var f=.0055*(Math.min(camZ,5.4)/4.2);group.rotation.y+=dx*f;group.rotation.x=clamp(group.rotation.x+dy*f,-1.25,1.25);vy=dx*f;vx=dy*f;idleT=0;
+ if(!interacted&&drag.moved>20){interacted=true;}});
+gc.addEventListener('pointerup',function(e){if(!drag)return;var click=drag.moved<6;drag=null;gc.style.cursor='grab';if(click&&onGlobe(e.clientX,e.clientY))startZoom();});
+gc.addEventListener('pointercancel',function(){drag=null;gc.style.cursor='grab';});
+gc.addEventListener('keydown',function(e){if(phase!=='idle')return;var k=e.key;
+ if(k==='ArrowLeft'){vy=-.04;idleT=0;e.preventDefault();}else if(k==='ArrowRight'){vy=.04;idleT=0;e.preventDefault();}
+ else if(k==='ArrowUp'){vx=-.03;e.preventDefault();}else if(k==='ArrowDown'){vx=.03;e.preventDefault();}
+ else if(k==='Enter'||k===' '){e.preventDefault();startZoom();}});
+prim.onclick=function(){if(phase==='local'){document.getElementById('route').scrollIntoView({behavior:reduce?'auto':'smooth'});document.getElementById('rFrom').focus({preventScroll:true});}else startZoom();};
+back.onclick=function(){toGlobe();gc.focus({preventScroll:true});};
+if('IntersectionObserver' in window)new IntersectionObserver(function(en){heroVis=en[0].isIntersecting;},{threshold:0}).observe(document.querySelector('.hero'));
+
+var tmpV=null;
+function frame(now){
+ requestAnimationFrame(frame);
+ var dt=last===null?0:Math.min(.05,(now-last)/1000);last=now;var t=now/1000;
+ if(!heroVis||document.hidden)return;
+ if(ok&&renderer&&(phase!=='local'||(now-LS)<1400)){
+  if(phase==='idle'){
+   idleT+=dt;
+   if(!drag){group.rotation.y+=vy;group.rotation.x=clamp(group.rotation.x+vx,-1.25,1.25);vy*=.93;vx*=.93;if(Math.abs(vy)<.0005&&idleT>1.2&&!reduce)group.rotation.y+=dt*.2*Math.min(1,(idleT-1.2));}
+   camera.position.z+=(camZ-camera.position.z)*.12;
+   if(marker){var pu=.11+(reduce?0:.045*Math.sin(t*4));marker.scale.set(pu,pu,1);
+    tmpV=tmpV||new THREE.Vector3();marker.getWorldPosition(tmpV);var n=tmpV.clone().normalize(),toCam=camera.position.clone().sub(tmpV).normalize(),vis=n.dot(toCam);
+    var pr=tmpV.clone().project(camera),r=gc.getBoundingClientRect();
+    ml.style.opacity=vis>.25?1:0;ml.style.left=((pr.x+1)/2*r.width)+'px';ml.style.top=((1-pr.y)/2*r.height)+'px';}
+  } else if(phase==='zoom'){
+   zoomS.t+=dt;var k=ease(clamp(zoomS.t/3.4,0,1));
+   group.rotation.y=zoomS.ry0+(zoomS.ry1-zoomS.ry0)*k;group.rotation.x=zoomS.rx0+(lat0*D-zoomS.rx0)*k;
+   camera.position.z=zoomS.z0-(zoomS.z0-1.22)*Math.pow(k,1.6);offK=1-k;applyOff();
+   snow.material.opacity=clamp((k-.4)*2,0,.9);snow.material.size=.005+.004*k;
+   if(marker)marker.material.opacity=1-k;
+   if(zoomS.t>=2.9)toLocal();
+  }
+  if(!reduce)clouds.rotation.y+=dt*.012;
+  if(!reduce||!staticDone){updWind(t,reduce?.016:dt);updSnow(dt);}
+  renderer.render(scene,camera);
+ }
+ if(phase==='local'){if(!(reduce&&staticDone)){drawLocal(now);staticDone=true;}}
+}
+function boot(){
+ if(ok){try{initThree();addMarker();applyOff();}catch(e){ok=false;}}
+ resize();
+ if(!ok){cap.textContent='';toLocal();LS-=4000;back.style.display='none';}
+ else{toGlobe();if(reduce){for(var i=0;i<40;i++)updWind(0,.016);}requestAnimationFrame(function(){gc.classList.add('ready');});}
+}
+resize();requestAnimationFrame(frame);
+setTimeout(boot,60);
+})();
+</script>
+</body>
+</html>

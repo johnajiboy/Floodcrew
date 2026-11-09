@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FloodCrew demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#F3F1F8;color:#1C1530;font-family:Inter,system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{display:flex;flex-wrap:wrap;min-height:100vh}
+.side{flex:0 0 64px;background:#9A7FD9;display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 0;border-radius:0 18px 18px 0}
+.logo{width:38px;height:38px;border-radius:11px;background:#3E2F6E;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.sbtn{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center}
+.sbtn.on{background:#fff}
+main{flex:999 1 600px;min-width:0;padding:18px 22px 24px;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.brand{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.sub{font-size:13px;color:#5E566F}
+.pill{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E0DCEA;border-radius:999px;padding:4px 6px 4px 12px;font-size:13px;font-weight:500}
+.ctl{height:34px;min-width:34px;padding:0 12px;border-radius:999px;border:0;background:#3E2F6E;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.ctl.ghost{background:#fff;color:#3E2F6E;border:1px solid #D4CCE8}
+.ctl.sel{background:#EFE9FB;color:#3E2F6E;border:1px solid #9A7FD9}
+.clock{font-size:15px;padding:0 6px}
+.spacer{flex:1 1 100px}
+.ai{display:flex;align-items:center;gap:8px;font-size:12px;color:#3E2F6E;background:#EFE9FB;border-radius:999px;padding:7px 12px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.grid{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.card{background:#fff;border:1px solid #E4E1EE;border-radius:18px}
+.mapbox{flex:999 1 520px;min-width:0;position:relative;height:620px;overflow:hidden;background:#EDEFF2}
+.mapbox svg{position:absolute;inset:0;width:100%;height:100%}
+.legend{position:absolute;left:14px;top:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#4A435A}
+.legend b{font-size:13px;color:#1C1530}
+.legend span{display:flex;align-items:center;gap:8px}
+.brief{position:absolute;left:14px;bottom:14px;right:14px;max-width:560px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5}
+.brief .tag{flex:0 0 auto;font-size:11px;font-weight:700;background:#3E2F6E;color:#fff;border-radius:6px;padding:3px 7px;margin-top:1px}
+.col{flex:1 1 300px;max-width:360px;display:flex;flex-direction:column;gap:16px}
+.pad{padding:16px}
+h2{margin:0;font-size:15px;font-weight:600}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.badge{font-size:11px;font-weight:600;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.appr{display:flex;flex-direction:column;gap:10px;border:2px solid #E8A317}
+.appr .t{font-size:15px;font-weight:600;line-height:1.35}
+.appr .w{font-size:13px;color:#4A435A;line-height:1.5}
+.bar{flex:1 1 auto;height:6px;background:#ECE8F4;border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:#B7791F}
+.btns{display:flex;gap:8px}
+.b1{flex:1;height:44px;border:0;border-radius:10px;background:#3E2F6E;color:#fff;font-size:14px;font-weight:600}
+.b2{height:44px;padding:0 16px;border-radius:10px;background:#fff;font-size:14px;font-weight:500}
+.empty{font-size:13px;color:#5E566F;display:flex;align-items:center;gap:8px}
+.crew{display:flex;align-items:center;gap:10px;padding:7px 4px}
+.crew .n{font-size:14px;font-weight:600}
+.crew .s{font-size:12px;color:#5E566F}
+.av{position:relative;flex:0 0 auto;border-radius:50%}
+.av img{display:block;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px #fff,0 1px 4px rgba(28,21,48,.25)}
+.av .st{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;border:2px solid #fff}
+.log{display:flex;flex-direction:column;gap:8px;max-height:250px;overflow:auto}
+.ev{background:#F5F3FA;border-radius:10px;padding:9px 10px;font-size:13px;line-height:1.4;display:flex;flex-direction:column;gap:3px}
+.ev .h{display:flex;gap:8px;align-items:center}
+.phonecol{flex:0 1 300px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.phone{width:290px;height:600px;border-radius:40px;background:#1C1530;padding:12px;position:relative}
+.screen{width:100%;height:100%;border-radius:30px;background:#F7F5FC;overflow:hidden;display:flex;flex-direction:column}
+.ph-top{background:#9A7FD9;color:#1C1530;padding:18px 16px 14px;display:flex;align-items:center;gap:10px}
+.ph-body{padding:14px;display:flex;flex-direction:column;gap:12px;flex:1}
+.alertx{background:#3E2F6E;color:#fff;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.4;animation:pop .4s ease}
+@keyframes pop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
+.job{background:#fff;border:1px solid #E4E1EE;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.sbig{height:46px;border-radius:12px;border:1px solid #D4CCE8;background:#fff;font-size:14px;font-weight:600;color:#3E2F6E}
+.sbig.on{background:#3E2F6E;color:#fff;border-color:#3E2F6E}
+.cap{font-size:12px;color:#5E566F;text-align:center}
+.end{position:absolute;inset:0;background:rgba(28,21,48,.45);display:flex;align-items:center;justify-content:center;padding:20px}
+.endc{max-width:420px;padding:20px;display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.5}
+.hidden{display:none!important}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:pl 1.4s ease-in-out infinite;transform-origin:center;transform-box:fill-box}@keyframes pl{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:.05;transform:scale(1.6)}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="side" aria-label="Main">
+<div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E4DAF8" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 15c2.5-2.5 4.5-2.5 6 0s3.5 2.5 6 0 4.5-2.5 6 0"/><path d="M3 9c2.5-2.5 4.5-2.5 6 0s3.5 2.5 6 0 4.5-2.5 6 0"/></svg></div>
+<div class="sbtn on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3E2F6E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></div>
+<div class="sbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2A1F52" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div>
+<div class="sbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2A1F52" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+</nav>
+<main>
+<header class="top">
+<div><div class="brand">FloodCrew</div><div class="sub">Tees Valley operations · officer view</div></div>
+<div class="pill" style="padding:4px"><button class="ctl ghost md sel" data-m="flood">Flood</button><button class="ctl ghost md" data-m="winter">Snow &amp; ice</button></div>
+<div class="pill"><span class="dot" id="repDot" style="background:#E0592A"></span><span id="repTxt">Replay · sample flood event</span>
+<button class="ctl" id="play" aria-label="Play"><span id="playIcon">▶</span><span id="playTxt">Play</span></button>
+<span class="mono clock" id="clock">13:00</span></div>
+<div class="pill" style="padding:4px">
+<button class="ctl ghost sp" data-s="1">1×</button><button class="ctl ghost sp sel" data-s="2">2×</button><button class="ctl ghost sp" data-s="4">4×</button>
+</div>
+<button class="ctl ghost" id="reset">Restart</button>
+<div class="spacer"></div>
+<div class="ai"><span class="dot" style="background:#7A5CC9"></span><span id="aiStatus">Waiting to start</span></div>
+</header>
+
+<div class="grid">
+<section class="card mapbox" aria-label="Live map">
+<svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map of the River Tees with gauges and crews">
+<rect width="1000" height="700" fill="#EDEFF2"/>
+<path d="M860 0 L1000 0 L1000 270 C950 240 905 190 868 128 Z" fill="#DCE5EE"/>
+<rect x="60" y="80" width="160" height="90" rx="18" fill="#E5EBE7"/><rect x="520" y="470" width="190" height="120" rx="22" fill="#E5EBE7"/><rect x="770" y="430" width="150" height="110" rx="18" fill="#E5EBE7"/>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M0 430 L300 390 L520 310 L1000 340 M270 700 L335 480 L385 300 L420 0 M610 700 L650 430 L705 210 L725 0" stroke="#DDE1E7" stroke-width="10"/>
+<path d="M0 430 L300 390 L520 310 L1000 340 M270 700 L335 480 L385 300 L420 0 M610 700 L650 430 L705 210 L725 0" stroke="#fff" stroke-width="6"/>
+<path d="M0 190 L400 215 L700 165 L1000 95" stroke="#DDE1E7" stroke-width="9"/><path d="M0 190 L400 215 L700 165 L1000 95" stroke="#fff" stroke-width="5"/>
+<path d="M100 300 L500 260 M150 620 L560 560 M450 100 L520 640 M800 200 L860 600 M0 540 L250 520 M560 60 L900 300" stroke="#E5E8ED" stroke-width="2.5"/>
+</g>
+<path d="M90 700 C140 610 120 550 190 510 C260 470 250 410 330 370 C400 335 430 290 500 278 C580 265 600 238 660 208 C720 178 780 182 840 138 C880 108 900 70 1000 48" fill="none" stroke="#C3D4E6" stroke-width="18" stroke-linecap="round"/>
+<path id="riverIn" d="M90 700 C140 610 120 550 190 510 C260 470 250 410 330 370 C400 335 430 290 500 278 C580 265 600 238 660 208 C720 178 780 182 840 138 C880 108 900 70 1000 48" fill="none" stroke="#D6E2EE" stroke-width="8" stroke-linecap="round"/>
+<g id="zones"></g>
+<g font-size="12" font-weight="600" letter-spacing="2" fill="#9AA1AC">
+<text x="96" y="600">YARM</text><text x="228" y="455">EAGLESCLIFFE</text><text x="430" y="402">STOCKTON-ON-TEES</text><text x="560" y="300">THORNABY</text><text x="700" y="270">MIDDLESBROUGH</text><text x="400" y="620">INGLEBY BARWICK</text>
+</g>
+<g id="routes"></g>
+<g id="sites"></g>
+<g id="gauges"></g>
+<g id="crewsG"></g>
+</svg>
+<div class="card legend">
+<b>Map key</b>
+<span><i class="dot" style="background:#E0592A"></i><span id="lg1">High risk</span></span>
+<span><i class="dot" style="background:#E8A317"></i><span id="lg2">Rising</span></span>
+<span><i class="dot" style="background:#3E9C6B"></i><span id="lg3">Stable</span></span>
+<span><i style="width:18px;border-top:3px dashed #B7791F"></i>Proposed move</span>
+<span><i style="width:18px;border-top:3px solid #7A5CC9"></i><span id="lg4">Crew route</span></span>
+</div>
+<div class="card brief"><span class="tag">AI briefing</span><span id="brief"></span></div>
+<div class="end hidden" id="end"><div class="card endc"><h2 style="font-size:18px">Replay finished</h2><div id="endTxt"></div><button class="b1" id="again">Run it again</button></div></div>
+</section>
+
+<div class="col">
+<section class="card pad" aria-label="Approvals">
+<div class="row" style="margin-bottom:10px"><h2>Needs your approval</h2><span class="badge" id="apCount" style="background:#ECE8F4;color:#3E2F6E">0</span></div>
+<div id="apEmpty" class="empty"><span class="dot" style="background:#3E9C6B"></span>Nothing waiting. Low-risk moves run automatically.</div>
+<div id="apCard" class="appr card pad hidden" style="padding:14px">
+<div class="row"><span class="badge" style="background:#FBE8D6;color:#8A3A0E">High risk</span><span class="mono" style="font-size:12px;color:#5E566F" id="apWait"></span></div>
+<div class="t" id="apTitle"></div>
+<div class="w" id="apWhy"></div>
+<div class="row" style="font-size:12px;color:#4A435A"><span>Model confidence</span><span class="bar"><i id="apBar"></i></span><span class="mono" id="apConf"></span></div>
+<div class="btns"><button class="b1" id="approve">Approve</button><button class="b2" id="reject" style="border:1px solid #E7C4B4;color:#A1340C">Reject</button></div>
+</div>
+<div id="pubCard" class="appr card pad hidden" style="padding:14px;margin-top:10px;border-color:#7A5CC9">
+<div class="row"><span class="badge" style="background:#EFE9FB;color:#3E2F6E">Public alert draft</span><span class="mono" style="font-size:12px;color:#5E566F" id="pubWait"></span></div>
+<div class="t" id="pubTitle"></div>
+<div class="w" id="pubWhy"></div>
+<div class="btns"><button class="b1" id="publish">Publish to public</button><button class="b2" id="discard" style="border:1px solid #D4CCE8;color:#3E2F6E">Discard</button></div>
+</div>
+</section>
+<section class="card pad" aria-label="Crews">
+<div class="row" style="margin-bottom:6px"><h2>Crews</h2><span class="sub" id="crewCount"></span></div>
+<div id="crewList"></div>
+</section>
+<section class="card pad" aria-label="Event log">
+<div class="row" style="margin-bottom:10px"><h2>Event log</h2><span class="sub">every action can be undone</span></div>
+<div class="log" id="log"><div class="empty">No events yet.</div></div>
+</section>
+</div>
+
+<div class="phonecol">
+<div class="pill" style="padding:4px"><button class="ctl ghost pt sel" data-p="crew">Crew app</button><button class="ctl ghost pt" data-p="pub">Public app<span id="pubDot" class="dot hidden" style="background:#E0592A"></span></button></div>
+<div class="phone" aria-label="Phone preview">
+<div class="screen" id="scrCrew">
+<div class="ph-top"><span id="phAv"></span><div><div style="font-weight:700;font-size:15px">Amara Okafor</div><div style="font-size:12px;color:#2A1F52" id="phRole">Crew 3 lead</div></div></div>
+<div class="ph-body">
+<div id="phAlert" class="alertx hidden"></div>
+<div class="job">
+<div class="row"><span style="font-size:11px;color:#5E566F">Current job</span><span class="badge" id="phStatus"></span></div>
+<div style="font-size:15px;font-weight:600;line-height:1.35" id="phJob"></div>
+<div style="font-size:12px;color:#4A435A;line-height:1.45" id="phWhy"></div>
+</div>
+<button class="sbig" data-st="En route">En route</button>
+<button class="sbig" data-st="On site" id="phOn">On site</button>
+<button class="sbig" data-st="Done">Done</button>
+<div class="cap" style="margin-top:auto" id="phFoot">Live updates from FloodCrew</div>
+</div>
+</div>
+<div class="screen hidden" id="scrPub">
+<div class="ph-top" style="background:#3E2F6E;color:#fff"><div><div style="font-weight:700;font-size:15px">Tees Hazard Alerts</div><div style="font-size:12px;color:#D9CCF5">Public app · Middlesbrough area</div></div></div>
+<div class="ph-body" style="gap:10px;overflow:auto">
+<div id="pubBanner" class="alertx hidden"></div>
+<svg id="pubMap" viewBox="150 180 720 480" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Public hazard map" style="width:100%;height:150px;flex:0 0 150px;border-radius:12px;background:#EDEFF2;display:block"></svg>
+<div class="job" style="gap:4px"><span style="font-size:11px;color:#5E566F">Your route</span><span style="font-size:14px;font-weight:600" id="pubFromTo"></span><span style="font-size:12px;line-height:1.45" id="pubRoute"></span></div>
+<div style="font-size:13px;font-weight:600">Alerts near you</div>
+<div id="pubList" style="display:flex;flex-direction:column;gap:8px"></div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:#4A435A">Get alerts for your postcode
+<span style="display:flex;gap:6px"><input placeholder="e.g. TS1 1AA" style="flex:1;min-width:0;height:40px;border:1px solid #D4CCE8;border-radius:10px;padding:0 10px;font-size:14px"><button type="button" class="ctl" style="height:40px;border-radius:10px">Subscribe</button></span></label>
+<div class="cap">Advisory only. Always follow official Environment Agency and Met Office warnings.</div>
+</div>
+</div>
+</div>
+<div class="cap" id="phCap">Crew lead's phone (tap the buttons)</div>
+</div>
+</div>
+</main>
+</div>
+
+<script>
+(function(){
+var C={red:'#E0592A',amber:'#E8A317',green:'#3E9C6B',route:'#7A5CC9',prop:'#B7791F',ice:'#3B82F6'};
+var LOOKS={
+ c1:{skin:'#8D5A3B',hair:'#1E1A1C',back:'long',top:'short',shirt:'#5B45A0',bg:'#EAE3FA'},
+ c2:{skin:'#F0C9A4',hair:'#7A4A26',back:'none',top:'short',shirt:'#7A5CC9',bg:'#E3EAFB'},
+ c3:{skin:'#B9835A',hair:'#141214',back:'long',top:'short',shirt:'#6D5BB0',bg:'#F1EAFB'},
+ c4:{skin:'#E2B48C',hair:'#3A2A20',back:'none',top:'short',shirt:'#3E2F6E',bg:'#F6EEF9'},
+ c5:{skin:'#5E3B26',hair:'#9A7FD9',back:'none',top:'wrap',shirt:'#5B45A0',bg:'#EEE8F8'}
+};
+var HP={none:'M0 0',short:'M12.4 16.5 C12.2 9.8 15.6 7.4 20 7.4 C24.6 7.4 27.9 10 27.6 16.5 C26 13.2 23.2 11.8 20 11.8 C16.8 11.8 14 13.2 12.4 16.5 Z',long:'M11 18 C10.6 9.2 14.8 6.8 20 6.8 C25.2 6.8 29.4 9.2 29 18 L29.5 30 L10.5 30 Z',wrap:'M11.6 15.2 C11 8 15 5.2 20 5.2 C25 5.2 29 8 28.4 15.2 C25.6 12.4 14.4 12.4 11.6 15.2 Z'};
+var PHOTO={c1:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjExIDcgNzggNzgiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI0UzRERGNyIvPjxwYXRoIGQ9Ik0xMiAxMDEgQzE0IDgyIDI5IDczIDUwIDczIEM3MSA3MyA4NiA4MiA4OCAxMDEgWiIgZmlsbD0iI0Y2RjVGMiIvPjxyZWN0IHg9IjQyLjUiIHk9IjU4IiB3aWR0aD0iMTUiIGhlaWdodD0iMTgiIHJ4PSI2IiBmaWxsPSIjYTQ3MTRjIi8+PHBhdGggZD0iTTQyLjUgNjQgQzQ2IDY4IDU0IDY4IDU3LjUgNjQgTDU3LjUgNjAgTDQyLjUgNjAgWiIgZmlsbD0iIzAwMCIgb3BhY2l0eT0iLjEyIi8+PHBhdGggZD0iTTQyIDczIEw1MCA4NyBMNTggNzMgWiIgZmlsbD0iI0M5OEE1RCIvPjxwYXRoIGQ9Ik00MiA3MyBMNTAgODcgTDU4IDczIiBmaWxsPSJub25lIiBzdHJva2U9IiNFNEUyREMiIHN0cm9rZS13aWR0aD0iMS42Ii8+PGVsbGlwc2UgY3g9IjMwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjQzk4QTVEIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjQzk4QTVEIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iNDUiIHJ4PSIyMC41IiByeT0iMjMuNSIgZmlsbD0iI0M5OEE1RCIvPjxwYXRoIGQ9Ik0zMC41IDQ2IEMzMSA2MiAzOS41IDY5LjUgNTAgNjkuNSBDNjAuNSA2OS41IDY5IDYyIDY5LjUgNDYgQzY3IDU1IDYzIDU4IDU4IDU4LjUgQzU1IDU2IDQ1IDU2IDQyIDU4LjUgQzM3IDU4IDMzIDU1IDMwLjUgNDYgWiIgZmlsbD0iIzJFMjMxRSIvPjxlbGxpcHNlIGN4PSIzOCIgY3k9IjU0IiByeD0iNCIgcnk9IjIuNSIgZmlsbD0iI0U4Nzc2RiIgb3BhY2l0eT0iLjE4Ii8+PGVsbGlwc2UgY3g9IjYyIiBjeT0iNTQiIHJ4PSI0IiByeT0iMi41IiBmaWxsPSIjRTg3NzZGIiBvcGFjaXR5PSIuMTgiLz48ZyBmaWxsPSIjMUMxOTFDIj48cGF0aCBkPSJNMjkuNSA0NCBDMjguNSAyNiAzNyAxNSA1MiAxNCBDNjQgMTMuNSA3MyAyMSA3MC41IDQ0IEM2OSAzNCA2MyAyOSA1MyAyOC41IEM0MyAyOCAzNCAzMyAyOS41IDQ0IFoiLz48cGF0aCBkPSJNNDAgMjAgQzQ2IDE1IDU2IDE0IDYzIDE4IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMTIiIHN0cm9rZS13aWR0aD0iMiIvPjwvZz48cGF0aCBkPSJNMzggMzkuNSBRNDIgMzcuNSA0NiAzOSBNNTQgMzkgUTU4IDM3LjUgNjIgMzkuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUMxOTFDIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSI0MiIgY3k9IjQ1LjUiIHJ4PSIzLjMiIHJ5PSIyLjQiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI0MiIgY3k9IjQ1LjYiIHI9IjEuOSIgZmlsbD0iIzNCMjQxOCIvPjxjaXJjbGUgY3g9IjQyLjciIGN5PSI0NC45IiByPSIuNiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0zOC42IDQ0LjIgUTQyIDQyLjQgNDUuNCA0NC4yIiBmaWxsPSJub25lIiBzdHJva2U9IiM2NDQ1MmUiIHN0cm9rZS13aWR0aD0iLjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSI1OCIgY3k9IjQ1LjUiIHJ4PSIzLjMiIHJ5PSIyLjQiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI1OCIgY3k9IjQ1LjYiIHI9IjEuOSIgZmlsbD0iIzNCMjQxOCIvPjxjaXJjbGUgY3g9IjU4LjciIGN5PSI0NC45IiByPSIuNiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik01NC42IDQ0LjIgUTU4IDQyLjQgNjEuNCA0NC4yIiBmaWxsPSJub25lIiBzdHJva2U9IiM2NDQ1MmUiIHN0cm9rZS13aWR0aD0iLjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01MCA0Ny41IFE0OC4yIDUzIDQ5LjIgNTQuMiBRNTEgNTUgNTIuNiA1My44IiBmaWxsPSJub25lIiBzdHJva2U9IiNhNDcxNGMiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDEuNSA1OC4yIFE1MCA2Ny41IDU4LjUgNTguMiBRNTAgNjAuOCA0MS41IDU4LjIgWiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjN2M1NTM5IiBzdHJva2Utd2lkdGg9IjEuMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==',c2:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjExIDcgNzggNzgiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI0U2RENGOCIvPjxwYXRoIGQ9Ik0xMiAxMDEgQzE0IDgyIDI5IDczIDUwIDczIEM3MSA3MyA4NiA4MiA4OCAxMDEgWiIgZmlsbD0iIzZFNzY4MiIvPjxyZWN0IHg9IjQyLjUiIHk9IjU4IiB3aWR0aD0iMTUiIGhlaWdodD0iMTgiIHJ4PSI2IiBmaWxsPSIjYjE4ODcxIi8+PHBhdGggZD0iTTQyLjUgNjQgQzQ2IDY4IDU0IDY4IDU3LjUgNjQgTDU3LjUgNjAgTDQyLjUgNjAgWiIgZmlsbD0iIzAwMCIgb3BhY2l0eT0iLjEyIi8+PHBhdGggZD0iTTQxIDczIEw1MCA4NiBMNTkgNzMgQzU2IDcyIDQ0IDcyIDQxIDczIFoiIGZpbGw9IiNEOEE2OEEiLz48cGF0aCBkPSJNNDAgNzIgTDUwIDg1IEw0NSA5MCBMMzYgNzYgWiIgZmlsbD0iI0MzRDZFQyIvPjxwYXRoIGQ9Ik02MCA3MiBMNTAgODUgTDU1IDkwIEw2NCA3NiBaIiBmaWxsPSIjQzNENkVDIi8+PHBhdGggZD0iTTUwIDg1IEw1MCAxMDEiIHN0cm9rZT0iIzljYWJiYyIgc3Ryb2tlLXdpZHRoPSIxIi8+PGVsbGlwc2UgY3g9IjMwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjRDhBNjhBIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjRDhBNjhBIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iNDUiIHJ4PSIyMC41IiByeT0iMjMuNSIgZmlsbD0iI0Q4QTY4QSIvPjxwYXRoIGQ9Ik0zMSA0NyBDMzEuNSA2MiA0MCA2OSA1MCA2OSBDNjAgNjkgNjguNSA2MiA2OSA0NyBDNjcgNTggNjAgNjIgNTAgNjIgQzQwIDYyIDMzIDU4IDMxIDQ3IFoiIGZpbGw9IiMzYTJhMjQiIG9wYWNpdHk9Ii4xNiIvPjxlbGxpcHNlIGN4PSIzOCIgY3k9IjU0IiByeD0iNCIgcnk9IjIuNSIgZmlsbD0iI0U4Nzc2RiIgb3BhY2l0eT0iLjE4Ii8+PGVsbGlwc2UgY3g9IjYyIiBjeT0iNTQiIHJ4PSI0IiByeT0iMi41IiBmaWxsPSIjRTg3NzZGIiBvcGFjaXR5PSIuMTgiLz48ZyBmaWxsPSIjMkIxRjFCIj48cGF0aCBkPSJNMjkuNSA0NiBDMjcgMjcgMzkgMTcuNSA1MiAxOCBDNjUgMTguNSA3My41IDI3IDcwLjUgNDYgQzY5IDM3IDY2IDMyIDYxIDMwIEM1NSAzMy41IDQ0IDMzIDM3IDMxLjUgQzMzIDM1IDMxIDQwIDI5LjUgNDYgWiIvPjxwYXRoIGQ9Ik0zNyAzMS41IEM0NCAyNiA1NCAyNC41IDYxIDMwIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1vcGFjaXR5PSIuMjUiIHN0cm9rZS13aWR0aD0iMSIvPjwvZz48cGF0aCBkPSJNMzggMzkuNSBRNDIgMzcuNSA0NiAzOSBNNTQgMzkgUTU4IDM3LjUgNjIgMzkuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIxRjFCIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSI0MiIgY3k9IjQ1LjUiIHJ4PSIzLjMiIHJ5PSIyLjQiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI0MiIgY3k9IjQ1LjYiIHI9IjEuOSIgZmlsbD0iIzNCMjQxOCIvPjxjaXJjbGUgY3g9IjQyLjciIGN5PSI0NC45IiByPSIuNiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0zOC42IDQ0LjIgUTQyIDQyLjQgNDUuNCA0NC4yIiBmaWxsPSJub25lIiBzdHJva2U9IiM2YzUzNDUiIHN0cm9rZS13aWR0aD0iLjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSI1OCIgY3k9IjQ1LjUiIHJ4PSIzLjMiIHJ5PSIyLjQiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI1OCIgY3k9IjQ1LjYiIHI9IjEuOSIgZmlsbD0iIzNCMjQxOCIvPjxjaXJjbGUgY3g9IjU4LjciIGN5PSI0NC45IiByPSIuNiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik01NC42IDQ0LjIgUTU4IDQyLjQgNjEuNCA0NC4yIiBmaWxsPSJub25lIiBzdHJva2U9IiM2YzUzNDUiIHN0cm9rZS13aWR0aD0iLjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01MCA0Ny41IFE0OC4yIDUzIDQ5LjIgNTQuMiBRNTEgNTUgNTIuNiA1My44IiBmaWxsPSJub25lIiBzdHJva2U9IiNiMTg4NzEiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDMgNTkgUTUwIDY0IDU3IDU5IiBmaWxsPSJub25lIiBzdHJva2U9IiM4NTY2NTUiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=',c3:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjExIDcgNzggNzgiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI0VGRTZGQiIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMTciIHI9IjgiIGZpbGw9IiMxNjEyMUEiLz48cGF0aCBkPSJNMTIgMTAxIEMxNCA4MiAyOSA3MyA1MCA3MyBDNzEgNzMgODYgODIgODggMTAxIFoiIGZpbGw9IiNGRkZGRkYiLz48cmVjdCB4PSI0Mi41IiB5PSI1OCIgd2lkdGg9IjE1IiBoZWlnaHQ9IjE4IiByeD0iNiIgZmlsbD0iIzcyNGEzNyIvPjxwYXRoIGQ9Ik00Mi41IDY0IEM0NiA2OCA1NCA2OCA1Ny41IDY0IEw1Ny41IDYwIEw0Mi41IDYwIFoiIGZpbGw9IiMwMDAiIG9wYWNpdHk9Ii4xMiIvPjxwYXRoIGQ9Ik00MyA3MyBMNTAgODQgTDU3IDczIFoiIGZpbGw9IiM4QzVCNDQiLz48cGF0aCBkPSJNNDIgNzIgTDUwIDg0IEw0MyA4OCBMMzcgNzYgWiIgZmlsbD0iI0VERURGMiIvPjxwYXRoIGQ9Ik01OCA3MiBMNTAgODQgTDU3IDg4IEw2MyA3NiBaIiBmaWxsPSIjRURFREYyIi8+PGVsbGlwc2UgY3g9IjMwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjOEM1QjQ0Ii8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjOEM1QjQ0Ii8+PGNpcmNsZSBjeD0iMjkuNSIgY3k9IjU1IiByPSIxLjYiIGZpbGw9IiNFN0I4NEIiLz48Y2lyY2xlIGN4PSI3MC41IiBjeT0iNTUiIHI9IjEuNiIgZmlsbD0iI0U3Qjg0QiIvPjxlbGxpcHNlIGN4PSI1MCIgY3k9IjQ1IiByeD0iMjAuNSIgcnk9IjIzLjUiIGZpbGw9IiM4QzVCNDQiLz48ZWxsaXBzZSBjeD0iMzgiIGN5PSI1NCIgcng9IjQiIHJ5PSIyLjUiIGZpbGw9IiNFODc3NkYiIG9wYWNpdHk9Ii4xOCIvPjxlbGxpcHNlIGN4PSI2MiIgY3k9IjU0IiByeD0iNCIgcnk9IjIuNSIgZmlsbD0iI0U4Nzc2RiIgb3BhY2l0eT0iLjE4Ii8+PGcgZmlsbD0iIzE2MTIxQSI+PHBhdGggZD0iTTI5LjUgNDggQzI4IDI3IDM5IDE5LjUgNTAgMTkuNSBDNjEgMTkuNSA3MiAyNyA3MC41IDQ4IEM2OSAzOCA2MyAzMSA1MCAzMC41IEMzNyAzMSAzMSAzOCAyOS41IDQ4IFoiLz48L2c+PHBhdGggZD0iTTM4IDM5LjUgUTQyIDM3LjUgNDYgMzkgTTU0IDM5IFE1OCAzNy41IDYyIDM5LjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzE2MTIxQSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48ZWxsaXBzZSBjeD0iNDIiIGN5PSI0NS41IiByeD0iMy4zIiByeT0iMi40IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSI0NS42IiByPSIxLjkiIGZpbGw9IiMzQjI0MTgiLz48Y2lyY2xlIGN4PSI0Mi43IiBjeT0iNDQuOSIgcj0iLjYiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMzguNiA0NC4yIFE0MiA0Mi40IDQ1LjQgNDQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDYyZDIyIiBzdHJva2Utd2lkdGg9Ii45IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48ZWxsaXBzZSBjeD0iNTgiIGN5PSI0NS41IiByeD0iMy4zIiByeT0iMi40IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iNTgiIGN5PSI0NS42IiByPSIxLjkiIGZpbGw9IiMzQjI0MTgiLz48Y2lyY2xlIGN4PSI1OC43IiBjeT0iNDQuOSIgcj0iLjYiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNNTQuNiA0NC4yIFE1OCA0Mi40IDYxLjQgNDQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDYyZDIyIiBzdHJva2Utd2lkdGg9Ii45IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNTAgNDcuNSBRNDguMiA1MyA0OS4yIDU0LjIgUTUxIDU1IDUyLjYgNTMuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNzI0YTM3IiBzdHJva2Utd2lkdGg9IjEuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTQxLjUgNTguMiBRNTAgNjcuNSA1OC41IDU4LjIgUTUwIDYwLjggNDEuNSA1OC4yIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzU2MzgyYSIgc3Ryb2tlLXdpZHRoPSIxLjMiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=',c4:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjExIDcgNzggNzgiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI0VERThGQSIvPjxwYXRoIGQ9Ik0xMiAxMDEgQzE0IDgyIDI5IDczIDUwIDczIEM3MSA3MyA4NiA4MiA4OCAxMDEgWiIgZmlsbD0iIzFCMUEyMiIvPjxyZWN0IHg9IjQyLjUiIHk9IjU4IiB3aWR0aD0iMTUiIGhlaWdodD0iMTgiIHJ4PSI2IiBmaWxsPSIjNGEzMDIzIi8+PHBhdGggZD0iTTQyLjUgNjQgQzQ2IDY4IDU0IDY4IDU3LjUgNjQgTDU3LjUgNjAgTDQyLjUgNjAgWiIgZmlsbD0iIzAwMCIgb3BhY2l0eT0iLjEyIi8+PHBhdGggZD0iTTQxIDc0IEM0NCA3OSA1NiA3OSA1OSA3NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkEyODMzIiBzdHJva2Utd2lkdGg9IjIuNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGVsbGlwc2UgY3g9IjMwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjNUIzQjJCIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjNUIzQjJCIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iNDUiIHJ4PSIyMC41IiByeT0iMjMuNSIgZmlsbD0iIzVCM0IyQiIvPjxlbGxpcHNlIGN4PSIzOCIgY3k9IjU0IiByeD0iNCIgcnk9IjIuNSIgZmlsbD0iI0U4Nzc2RiIgb3BhY2l0eT0iLjE4Ii8+PGVsbGlwc2UgY3g9IjYyIiBjeT0iNTQiIHJ4PSI0IiByeT0iMi41IiBmaWxsPSIjRTg3NzZGIiBvcGFjaXR5PSIuMTgiLz48ZyBmaWxsPSIjMTIwRTBEIj48cGF0aCBkPSJNMzAgNDIgQzMwLjUgMjggMzkgMjEuNSA1MCAyMS41IEM2MSAyMS41IDY5LjUgMjggNzAgNDIgQzY3IDMzIDYwIDI5IDUwIDI5IEM0MCAyOSAzMyAzMyAzMCA0MiBaIiBvcGFjaXR5PSIuOTIiLz48L2c+PHBhdGggZD0iTTM4IDM5LjUgUTQyIDM3LjUgNDYgMzkgTTU0IDM5IFE1OCAzNy41IDYyIDM5LjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzEyMEUwRCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48ZWxsaXBzZSBjeD0iNDIiIGN5PSI0NS41IiByeD0iMy4zIiByeT0iMi40IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSI0NS42IiByPSIxLjkiIGZpbGw9IiMzQjI0MTgiLz48Y2lyY2xlIGN4PSI0Mi43IiBjeT0iNDQuOSIgcj0iLjYiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMzguNiA0NC4yIFE0MiA0Mi40IDQ1LjQgNDQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmQxZDE1IiBzdHJva2Utd2lkdGg9Ii45IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48ZWxsaXBzZSBjeD0iNTgiIGN5PSI0NS41IiByeD0iMy4zIiByeT0iMi40IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iNTgiIGN5PSI0NS42IiByPSIxLjkiIGZpbGw9IiMzQjI0MTgiLz48Y2lyY2xlIGN4PSI1OC43IiBjeT0iNDQuOSIgcj0iLjYiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNNTQuNiA0NC4yIFE1OCA0Mi40IDYxLjQgNDQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmQxZDE1IiBzdHJva2Utd2lkdGg9Ii45IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48ZyBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9Ii4xIiBzdHJva2U9IiMyMjIxMkEiIHN0cm9rZS13aWR0aD0iMS43Ij48cmVjdCB4PSIzNS41IiB5PSI0MC41IiB3aWR0aD0iMTMiIGhlaWdodD0iMTAiIHJ4PSIzLjUiLz48cmVjdCB4PSI1MS41IiB5PSI0MC41IiB3aWR0aD0iMTMiIGhlaWdodD0iMTAiIHJ4PSIzLjUiLz48L2c+PHBhdGggZD0iTTQ4LjUgNDQuNSBRNTAgNDMuMiA1MS41IDQ0LjUgTTM1LjUgNDQgTDMwLjUgNDMgTTY0LjUgNDQgTDY5LjUgNDMiIHN0cm9rZT0iIzIyMjEyQSIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiLz48cGF0aCBkPSJNNTAgNDcuNSBRNDguMiA1MyA0OS4yIDU0LjIgUTUxIDU1IDUyLjYgNTMuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzMDIzIiBzdHJva2Utd2lkdGg9IjEuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTQxLjUgNTguMiBRNTAgNjcuNSA1OC41IDU4LjIgUTUwIDYwLjggNDEuNSA1OC4yIFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzM4MjQxYSIgc3Ryb2tlLXdpZHRoPSIxLjMiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=',c5:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjExIDcgNzggNzgiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI0YxRTdGNiIvPjxwYXRoIGQ9Ik0xMiAxMDEgQzE0IDgyIDI5IDczIDUwIDczIEM3MSA3MyA4NiA4MiA4OCAxMDEgWiIgZmlsbD0iI0VDRTZENyIvPjxyZWN0IHg9IjQyLjUiIHk9IjU4IiB3aWR0aD0iMTUiIGhlaWdodD0iMTgiIHJ4PSI2IiBmaWxsPSIjYjE4ODZkIi8+PHBhdGggZD0iTTQyLjUgNjQgQzQ2IDY4IDU0IDY4IDU3LjUgNjQgTDU3LjUgNjAgTDQyLjUgNjAgWiIgZmlsbD0iIzAwMCIgb3BhY2l0eT0iLjEyIi8+PHBhdGggZD0iTTQxIDc0IEM0NCA3OSA1NiA3OSA1OSA3NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRENENUMzIiBzdHJva2Utd2lkdGg9IjIuNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGVsbGlwc2UgY3g9IjMwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjRDhBNzg2Ii8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iNDgiIHJ4PSI0IiByeT0iNS42IiBmaWxsPSIjRDhBNzg2Ii8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iNDUiIHJ4PSIyMC41IiByeT0iMjMuNSIgZmlsbD0iI0Q4QTc4NiIvPjxlbGxpcHNlIGN4PSIzOCIgY3k9IjU0IiByeD0iNCIgcnk9IjIuNSIgZmlsbD0iI0U4Nzc2RiIgb3BhY2l0eT0iLjE4Ii8+PGVsbGlwc2UgY3g9IjYyIiBjeT0iNTQiIHJ4PSI0IiByeT0iMi41IiBmaWxsPSIjRTg3NzZGIiBvcGFjaXR5PSIuMTgiLz48ZyBmaWxsPSIjMjQxQzE3Ij48Y2lyY2xlIGN4PSIzMyIgY3k9IjM2IiByPSI1LjUiLz48Y2lyY2xlIGN4PSIzNyIgY3k9IjI4IiByPSI2Ii8+PGNpcmNsZSBjeD0iNDQiIGN5PSIyMyIgcj0iNi41Ii8+PGNpcmNsZSBjeD0iNTIiIGN5PSIyMSIgcj0iNi41Ii8+PGNpcmNsZSBjeD0iNjAiIGN5PSIyMyIgcj0iNi41Ii8+PGNpcmNsZSBjeD0iNjYiIGN5PSIyOSIgcj0iNiIvPjxjaXJjbGUgY3g9IjY4LjUiIGN5PSIzNyIgcj0iNSIvPjxjaXJjbGUgY3g9IjQxIiBjeT0iMzEiIHI9IjUiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjI4IiByPSI1Ii8+PGNpcmNsZSBjeD0iNTkiIGN5PSIzMCIgcj0iNSIvPjwvZz48cGF0aCBkPSJNMzggMzkuNSBRNDIgMzcuNSA0NiAzOSBNNTQgMzkgUTU4IDM3LjUgNjIgMzkuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjQxQzE3IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSI0MiIgY3k9IjQ1LjUiIHJ4PSIzLjMiIHJ5PSIyLjQiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI0MiIgY3k9IjQ1LjYiIHI9IjEuOSIgZmlsbD0iIzNCMjQxOCIvPjxjaXJjbGUgY3g9IjQyLjciIGN5PSI0NC45IiByPSIuNiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0zOC42IDQ0LjIgUTQyIDQyLjQgNDUuNCA0NC4yIiBmaWxsPSJub25lIiBzdHJva2U9IiM2YzUzNDMiIHN0cm9rZS13aWR0aD0iLjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSI1OCIgY3k9IjQ1LjUiIHJ4PSIzLjMiIHJ5PSIyLjQiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI1OCIgY3k9IjQ1LjYiIHI9IjEuOSIgZmlsbD0iIzNCMjQxOCIvPjxjaXJjbGUgY3g9IjU4LjciIGN5PSI0NC45IiByPSIuNiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik01NC42IDQ0LjIgUTU4IDQyLjQgNjEuNCA0NC4yIiBmaWxsPSJub25lIiBzdHJva2U9IiM2YzUzNDMiIHN0cm9rZS13aWR0aD0iLjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01MCA0Ny41IFE0OC4yIDUzIDQ5LjIgNTQuMiBRNTEgNTUgNTIuNiA1My44IiBmaWxsPSJub25lIiBzdHJva2U9IiNiMTg4NmQiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDUgNjAuNSBRNTAgNjEuNiA1NSA2MC41IiBmaWxsPSJub25lIiBzdHJva2U9IiM4NTY3NTMiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDQuNSA1OC4yIFE1MCA1Ni42IDU1LjUgNTguMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjQxQzE3IiBzdHJva2Utd2lkdGg9IjEuNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuMzUiLz48L3N2Zz4='};
+function face(id,size){return '<img src="'+PHOTO[id]+'" alt="" width="'+size+'" height="'+size+'" style="display:block;width:'+size+'px;height:'+size+'px;border-radius:50%;object-fit:cover">';}
+var ST={'On site':['#DCF3E6','#14532D','#2E9E62'],'En route':['#DCE7FB','#1E3A8A','#3B6FE0'],'Standby':['#ECEFF2','#334155','#9AA1AC'],'Assigned':['#FBEFD6','#7A4A06','#E8A317']};
+var NAMES={c1:['Marco Santos','MS'],c2:['Liam Hart','LH'],c3:['Amara Okafor','AO'],c4:['Daniel Adeyemi','DA'],c5:['Omar Haddad','OH']};
+var DEPOT_OFF={c1:[-24,-6],c2:[-22,0],c3:[0,26],c4:[0,-24],c5:[22,0]};
+
+/* ---------- scenarios ---------- */
+var MODES={};
+MODES.flood={
+ start:780,end:238,unit:'Crew',onLabel:'On site',rep:'Replay · sample flood event',
+ legend:['High risk','Rising','Stable','Crew route'],
+ intro:'Press Play to replay the flood. The system reads river levels, forecasts risk and plans crews.',
+ sites:{care:{x:236,y:546,label:'Care home',name:'Yarm care home',prot:1},school:{x:520,y:226,label:'School',name:'Thornaby school',prot:1},stock:{x:410,y:322,label:'Riverside',name:'Stockton riverside'},depot:{x:775,y:350,label:'Depot',name:'Middlesbrough depot',dep:1}},
+ sensors:[
+  {name:'Yarm',x:168,y:528,peakT:165,peak:1.18,w:75,zone:[185,520,80,52]},
+  {name:'Stockton',x:352,y:352,peakT:180,peak:1.0,w:80,zone:[350,362,88,54]},
+  {name:'Thornaby',x:612,y:240,peakT:190,peak:0.86,w:85,zone:[620,235,70,42]},
+  {name:'Middlesbrough',x:842,y:138,peakT:200,peak:0.62,w:90,zone:null}],
+ val:function(g,t){return 0.45+(g.peak-0.45)*Math.exp(-Math.pow((t-g.peakT)/g.w,2));},
+ risk:function(g,t){var f=this.val(g,t);return f>=0.9?'red':f>=0.72?'amber':'green';},
+ label:function(g,t){var r=(this.val(g,t+5)-this.val(g,t))/5*60*40;return g.name.slice(0,5)+' '+(r>=0?'+':'')+r.toFixed(1)+'cm/h';},
+ zoneCol:function(r){return C[r];},
+ crews:function(){return{
+  c1:{at:'stock',status:'On site',job:'Pump deployment, Stockton riverside'},
+  c2:{at:'depot',status:'Standby',job:'Standby at depot'},
+  c3:{at:'school',status:'On site',job:'Flood barrier, Thornaby school',why:'Protected site. Thornaby gauge rising slowly.'},
+  c4:{at:'depot',status:'Standby',job:'Standby at depot'},
+  c5:{at:'depot',status:'Standby',job:'Loading pumps at depot'}};},
+ events:[
+  {t:4,run:function(){log('Auto','400 sandbags pre-positioned at Middlesbrough depot. Low risk: no crew moved.');S.brief='Levels normal but rain is heavy upstream. Pre-positioning sandbags at the depot.';}},
+  {t:30,run:function(){send('c2','care',40,'Sandbag wall, Yarm care home','Yarm gauge rising. Care home in flood zone.');log('Auto','Crew 2 sent from depot to Yarm care home. Low risk: no protected site left uncovered.');S.brief='Yarm is rising fastest. Crew 2 sent automatically: it was on standby, so nothing is left uncovered.';}},
+  {t:62,run:function(){send('c4','stock',35,'Support pumps, Stockton riverside','Stockton gauge rising. 210 homes in flood zone.');log('Auto','Crew 4 sent from depot to support Crew 1 at Stockton. Low risk.');S.brief='Stockton now rising too. Crew 4 sent to support Crew 1. Yarm forecast to pass flood level within 3 hours.';}},
+  {t:96,run:function(){S.pending={id:'c3',to:'care',since:S.t,title:'Move Crew 3 from Thornaby school to Yarm care home',why:'Yarm is forecast to exceed flood level (+8 cm/h, 140 homes, 1 care home). Crew 2 alone cannot finish the wall in time. This leaves Thornaby school uncovered.',conf:64,
+   ok:function(){send('c3','care',45,'Sandbag wall, Yarm care home','Approved by officer. Yarm rising fast, care home at risk.',true);S.phAlert='New job: go to Yarm care home. Approved by duty officer at '+hhmm(S.t)+'.';log('Officer','Approved: Crew 3 to Yarm care home. Crew lead notified.');send('c5','school',40,'Cover Thornaby school','Auto-filled: Crew 3 moved, protected site uncovered.');log('Auto','Crew 5 sent from depot to cover Thornaby school. Low risk: fills an uncovered site.');S.brief='Crew 3 heading to Yarm. Crew 5 auto-sent to keep Thornaby school covered.';},
+   no:function(){log('Officer','Rejected: Crew 3 stays at Thornaby school.');send('c5','care',50,'Sandbag support, Yarm care home','Alternative after officer rejected moving Crew 3.');log('Auto','Alternative plan: Crew 5 sent from depot to Yarm. Low risk: no site uncovered.');S.brief='Plan adjusted: Crew 3 stays at the school, Crew 5 goes to Yarm instead (arrives later).';}};
+   log('Waiting','High-risk move sent to officer for approval: Crew 3 to Yarm.');S.brief='Recommending Crew 3 to Yarm. This uncovers a protected site, so it needs your approval.';}},
+  {t:126,run:function(){if(S.pending)log('Escalated','Approval waiting 30 min. Reminder sent to duty manager. Move not carried out.');}},
+  {t:40,run:function(){pubAuto('Flood warning: River Tees at Yarm','Official Environment Agency warning. Riverside paths in Yarm closed.','Official',C.red);}},
+  {t:108,run:function(){draft('Avoid Yarm High Street from 15:30','Flooding expected near the river. Drivers: use the A19 via Eaglescliffe. Pedestrians: riverside path and underpass closed.','FloodCrew forecast, not yet an official warning. A false alarm causes panic, so the officer checks it.',C.red);}},
+  {t:212,run:function(){pubAuto('Levels falling at Stockton','Riverside path in Stockton still closed until crews finish.','FloodCrew',C.amber);}},
+  {t:205,run:function(){S.brief='Peak has passed at Yarm and Stockton. Levels falling. Crews can stand down once sites are secure.';log('Auto','Forecast updated: levels falling at all gauges.');}}
+ ],
+ route:{fromTo:'Stockton → Yarm, driving',normal:'M410 322 C360 360 300 420 236 546',safe:'M410 322 L385 300 L335 480 L300 590 L236 566',okTxt:'No warnings on your route yet.',safeTxt:'Rerouted: avoids flooded Yarm High Street. Via A19 and Eaglescliffe (+6 min).'},
+ summary:function(){return 'Yarm care home was '+(S.crews.c3.at==='care'||S.crews.c5.at==='care'?'reinforced before the peak.':'covered by Crew 2 only.');}
+};
+MODES.winter={
+ start:1140,end:298,unit:'Gritter',onLabel:'Gritting',rep:'Replay · sample freezing night',
+ legend:['Ice likely (≤0.5°C)','Near freezing','Above freezing','Gritter route'],
+ intro:'Press Play to replay a freezing night. The system reads road temperature forecasts, predicts black ice and plans gritting routes.',
+ sites:{hosp:{x:760,y:470,label:'Hospital route',name:'the hospital route',prot:1},bus:{x:440,y:300,label:'Bus route',name:'Stockton bus route'},hill:{x:430,y:560,label:'Steep hill',name:'Ingleby Barwick hill'},school:{x:250,y:560,label:'School road',name:'Yarm school road',prot:1},depot:{x:775,y:350,label:'Salt depot',name:'Middlesbrough salt depot',dep:1}},
+ sensors:[
+  {name:'Hill',x:470,y:520,s0:3.2,min:-1.6,fall:130,zone:[430,560,90,48]},
+  {name:'Hosp',x:800,y:430,s0:3.8,min:-0.4,fall:220,zone:[760,470,85,46]},
+  {name:'Bus',x:480,y:262,s0:4.2,min:0.9,fall:240,zone:[440,300,80,44]},
+  {name:'Yarm',x:210,y:520,s0:3.5,min:-0.3,fall:200,zone:[250,560,80,44]}],
+ val:function(g,t){return g.s0-(g.s0-g.min)*Math.min(1,t/g.fall);},
+ risk:function(g,t){var v=this.val(g,t);return v<=0.5?'red':v<=2.5?'amber':'green';},
+ label:function(g,t){return g.name+' '+this.val(g,t).toFixed(1)+'°C';},
+ zoneCol:function(r){return r==='red'?C.ice:'#93C5FD';},
+ crews:function(){return{
+  c1:{at:'depot',status:'Standby',job:'Loaded with salt, ready at depot'},
+  c2:{at:'depot',status:'Standby',job:'Loaded with salt, ready at depot'},
+  c3:{at:'depot',status:'Standby',job:'Loaded with salt, ready at depot',why:'Waiting for the evening forecast.'},
+  c4:{at:'depot',status:'Standby',job:'Loaded with salt, ready at depot'},
+  c5:{at:'depot',status:'Standby',job:'Loaded with salt, ready at depot'}};},
+ events:[
+  {t:6,run:function(){log('Auto','Salt depot checked: 820 t of rock salt. Brine pre-wet loaded on all 5 gritters.');S.brief='Dry and cold. Road temperatures forecast to drop below zero after 23:00, with a shower around 21:30.';}},
+  {t:30,run:function(){send('c3','hosp',40,'Grit the hospital route','Priority 1 route. Road forecast to reach -0.4°C after a shower: black ice risk.');S.phAlert='Run started: hospital route (priority 1).';log('Auto','Gritter 3 started the hospital route. Low risk: priority 1 route, precautionary run.');S.brief='Black ice likely after the shower. Starting priority 1: the hospital route.';}},
+  {t:52,run:function(){send('c2','bus',35,'Grit the Stockton bus route','Priority 2 route. Buses run until midnight.');log('Auto','Gritter 2 started the Stockton bus route. Low risk.');S.brief='Hospital route under way. Bus routes next, before the last buses.';}},
+  {t:76,run:function(){send('c1','school',45,'Grit Yarm school road','Protected route for the morning school run.');log('Auto','Gritter 1 started Yarm school road. Low risk: fills an untreated protected route.');}},
+  {t:118,run:function(){S.pending={id:'c3',to:'hill',since:S.t,title:'Divert Gritter 3 from the hospital route to Ingleby Barwick hill',why:'A snow band has arrived early. The steep hill is at -0.8°C and buses and ambulances use it. The hospital route is about 60% treated and would be left unfinished.',conf:58,
+   ok:function(){send('c3','hill',30,'Grit Ingleby Barwick hill','Diverted by officer: snow on a steep hill at -0.8°C.',true);S.phAlert='Diversion: go to Ingleby Barwick hill now. Approved by duty officer at '+hhmm(S.t)+'.';log('Officer','Approved: Gritter 3 diverted to Ingleby Barwick hill. Driver notified.');send('c5','hosp',35,'Finish the hospital route','Auto-filled: Gritter 3 diverted, priority 1 route unfinished.');log('Auto','Gritter 5 sent to finish the hospital route. Low risk: fills an unfinished priority route.');S.brief='Gritter 3 heading to the hill. Gritter 5 auto-sent to finish the hospital route.';},
+   no:function(){log('Officer','Rejected: Gritter 3 finishes the hospital route first.');send('c4','hill',45,'Grit Ingleby Barwick hill','Alternative after officer kept Gritter 3 on the hospital route.');log('Auto','Alternative plan: Gritter 4 sent from depot to the hill. Low risk: nothing left unfinished.');S.brief='Plan adjusted: hospital route finished first; Gritter 4 goes to the hill (arrives later).';}};
+   log('Waiting','High-risk move sent to officer: divert Gritter 3 away from the hospital route.');S.brief='Snow arrived early on the hill. Recommending a diversion, but it leaves the hospital route unfinished, so it needs your approval.';}},
+  {t:150,run:function(){if(S.pending)log('Escalated','Approval waiting 30 min. Reminder sent to duty manager. Diversion not carried out.');}},
+  {t:36,run:function(){pubAuto('Gritting under way','Hospital route being gritted now. Other roads may be icy after 23:00.','Gritting',C.ice);}},
+  {t:124,run:function(){draft('Ingleby Barwick hill: snow and ice','Not yet gritted. Drivers: avoid if you can. Pedestrians: use the lower footpath and take care.','New FloodCrew warning from sensor data. Telling people to avoid a road needs the officer.',C.red);}},
+  {t:262,run:function(){pubAuto('Main routes gritted','Pavements and side streets may still be icy. Walk with care.','Gritting',C.green);}},
+  {t:250,run:function(){log('Auto','Priority routes treated. Second run scheduled for 04:00 if road temperatures stay below zero.');S.brief='Main routes treated. Watching temperatures for a second run before the morning rush.';}}
+ ],
+ route:{fromTo:'Stockton → Ingleby Barwick, driving',normal:'M440 300 C440 380 435 470 430 560',safe:'M440 300 L520 310 L560 470 L520 590 L430 590',okTxt:'No warnings on your route yet.',safeTxt:'Rerouted: avoids the icy, ungritted hill. Via gritted main road (+4 min).'},
+ summary:function(){return 'Ingleby Barwick hill was '+(S.crews.c3.at==='hill'||S.crews.c4.at==='hill'?'gritted after the snow band arrived.':'still waiting for treatment.');}
+};
+
+var M=MODES.flood,mode='flood',S,timer=null,speed=2,ptab='crew';
+function $(id){return document.getElementById(id);}
+function init(){
+ var cr=M.crews(),crews={};
+ Object.keys(cr).forEach(function(k,i){var n=NAMES[k];crews[k]=Object.assign({id:k,name:n[0],ini:n[1],crew:M.unit+' '+(i+1)},cr[k]);});
+ S={t:0,running:false,fired:{},log:[],pending:null,ended:false,crews:crews,phAlert:null,brief:M.intro,alerts:[],draft:null,pubBanner:null,pubNew:false,routeSafe:false};
+ $('end').classList.add('hidden');
+ $('repTxt').textContent=M.rep;$('repDot').style.background=mode==='flood'?'#E0592A':C.ice;
+ ['lg1','lg2','lg3','lg4'].forEach(function(id,i){$(id).textContent=M.legend[i];});
+ $('phRole').textContent=mode==='flood'?'Crew 3 lead':'Gritter 3 driver';$('phOn').textContent=M.onLabel;
+ setRun(false);render();
+}
+function hhmm(t){var m=(M.start+Math.round(t))%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function disp(s){return s==='On site'?M.onLabel:s;}
+function pos(c){
+ var o=DEPOT_OFF[c.id];
+ if(c.move){var a=pt(c.move.from,c),b=M.sites[c.move.to],p=c.move.waiting?0:Math.min(1,(S.t-c.move.start)/c.move.dur);return {x:a.x+(b.x-a.x)*p,y:a.y+(b.y-a.y)*p};}
+ return pt(c.at,c);
+}
+function pt(site,c){var s=M.sites[site],o=s.dep?DEPOT_OFF[c.id]:[0,0];return {x:s.x+o[0],y:s.y+o[1]};}
+function log(kind,text){S.log.unshift({t:S.t,kind:kind,text:text});}
+function send(id,to,dur,job,why,waitForPhone){var c=S.crews[id];c.move={from:c.move?c.move.to:c.at,to:to,start:S.t,dur:dur,waiting:!!waitForPhone};if(c.move.from===to){c.move=null;return;}c.status=waitForPhone?'Assigned':'En route';c.job=job;c.why=why;}
+function pubAuto(title,body,src,col){S.alerts.unshift({t:S.t,title:title,body:body,src:src,col:col});S.pubBanner=title+': '+body;S.pubNew=ptab!=='pub';log('Auto','Public alert published automatically: "'+title+'". Low risk: '+(src==='Official'?'matches an official warning.':'confirmed status update.'));}
+function draft(title,body,why,col){S.draft={title:title,body:body,why:why,col:col,since:S.t};log('Waiting','Public alert drafted for officer approval: "'+title+'".');}
+function pubDecide(ok){var d=S.draft;if(!d)return;S.draft=null;
+ if(ok){S.alerts.unshift({t:S.t,title:d.title,body:d.body,src:'FloodCrew',col:d.col});S.pubBanner=d.title+': '+d.body;S.pubNew=ptab!=='pub';S.routeSafe=true;log('Officer','Public alert approved and published: "'+d.title+'". Safe routes updated.');}
+ else log('Officer','Public alert discarded: "'+d.title+'".');render();}
+function decide(ok){var p=S.pending;if(!p)return;S.pending=null;(ok?p.ok:p.no)();render();}
+
+function tick(){
+ if(!S.running)return;
+ S.t+=speed;
+ M.events.forEach(function(e,i){if(!S.fired[i]&&S.t>=e.t){S.fired[i]=1;e.run();}});
+ var c3=S.crews.c3;if(c3.move&&c3.move.waiting&&S.t-c3.move.start>=12){c3.move.waiting=false;c3.move.start=S.t;c3.status='En route';S.phAlert=null;log('Auto',c3.crew+' accepted the job (auto-accepted for the demo after 12 min).');}
+ Object.keys(S.crews).forEach(function(k){var c=S.crews[k];if(c.move&&!c.move.waiting&&S.t-c.move.start>=c.move.dur){c.at=c.move.to;c.move=null;c.status='On site';log('Crew',c.crew+(mode==='flood'?' arrived at ':' now gritting ')+M.sites[c.at].name+'.');}});
+ if(S.t>=M.end)finish();
+ render();
+}
+function finish(){setRun(false);S.ended=true;
+ var auto=S.log.filter(function(e){return e.kind==='Auto';}).length,off=S.log.filter(function(e){return e.kind==='Officer';}).length;
+ $('endTxt').innerHTML='The system made <b>'+auto+' automatic decisions</b> and asked the officer <b>'+off+' time'+(off===1?'':'s')+'</b>. Every action is in the event log with its reason. '+M.summary();
+ $('end').classList.remove('hidden');}
+function setRun(on){S.running=on;$('playTxt').textContent=on?'Pause':'Play';$('playIcon').textContent=on?'❚❚':'▶';$('play').setAttribute('aria-label',on?'Pause':'Play');
+ if(on&&!timer)timer=setInterval(tick,450);if(!on&&timer){clearInterval(timer);timer=null;}}
+
+function render(){
+ var t=S.t;$('clock').textContent=hhmm(t);
+ $('aiStatus').textContent=S.running?'Plan updated at '+hhmm(Math.floor(t/15)*15):(S.t>0?'Paused':'Waiting to start');
+ $('brief').textContent=S.brief;
+ var z='',g='';
+ M.sensors.forEach(function(G){var r=M.risk(G,t),col=C[r];
+  if(G.zone&&r!=='green'){var zc=M.zoneCol(r);z+='<ellipse cx="'+G.zone[0]+'" cy="'+G.zone[1]+'" rx="'+G.zone[2]+'" ry="'+G.zone[3]+'" fill="'+zc+'" fill-opacity=".14" stroke="'+zc+'" stroke-opacity=".55" stroke-width="1.5" stroke-dasharray="6 5"/>';}
+  var lab=M.label(G,t),w=lab.length*7+16;
+  g+=(r==='red'?'<circle class="pulse" cx="'+G.x+'" cy="'+G.y+'" r="14" fill="'+col+'"/>':'<circle cx="'+G.x+'" cy="'+G.y+'" r="18" fill="'+col+'" fill-opacity=".18"/>')+
+   '<circle cx="'+G.x+'" cy="'+G.y+'" r="8.5" fill="'+col+'" stroke="#fff" stroke-width="3"/>'+
+   '<rect x="'+(G.x-w/2)+'" y="'+(G.y-38)+'" width="'+w+'" height="20" rx="10" fill="'+(r==='red'?'#B6431C':r==='amber'?'#8A5A08':'#2E7350')+'"/>'+
+   '<text x="'+G.x+'" y="'+(G.y-24)+'" fill="#fff" font-size="11" text-anchor="middle" font-family="JetBrains Mono, monospace">'+lab+'</text>';});
+ $('zones').innerHTML=z;$('gauges').innerHTML=g;
+ var s='';Object.keys(M.sites).forEach(function(k){var x=M.sites[k];var w=x.label.length*7+18;
+  s+='<rect x="'+(x.x-w/2)+'" y="'+(x.y+22)+'" width="'+w+'" height="20" rx="6" fill="'+(x.dep?'#3E2F6E':'#fff')+'" stroke="'+(x.prot?'#6D4AC4':x.dep?'#3E2F6E':'#B9B3C9')+'" stroke-width="1.5"/><text x="'+x.x+'" y="'+(x.y+36)+'" font-size="11" font-weight="600" text-anchor="middle" fill="'+(x.dep?'#fff':x.prot?'#4C2F9E':'#4A435A')+'">'+x.label+'</text>';});
+ $('sites').innerHTML=s;
+ var r='';Object.keys(S.crews).forEach(function(k){var c=S.crews[k];if(c.move){var a=pt(c.move.from,c),b=M.sites[c.move.to],p=pos(c);
+   r+='<line x1="'+a.x+'" y1="'+a.y+'" x2="'+p.x+'" y2="'+p.y+'" stroke="'+C.route+'" stroke-width="4" stroke-linecap="round"/><line x1="'+p.x+'" y1="'+p.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="'+C.route+'" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 8"/>';}});
+ if(S.pending){var a=pos(S.crews[S.pending.id]),b=M.sites[S.pending.to];r+='<path d="M'+a.x+' '+a.y+' Q '+((a.x+b.x)/2)+' '+(Math.min(a.y,b.y)+40)+' '+b.x+' '+b.y+'" fill="none" stroke="'+C.prop+'" stroke-width="3" stroke-dasharray="9 7" stroke-linecap="round"/>';}
+ $('routes').innerHTML=r;
+ var cg='';Object.keys(S.crews).forEach(function(k){var c=S.crews[k],p=pos(c),col=ST[c.status][2];
+  cg+='<g style="filter:drop-shadow(0 2px 3px rgba(28,21,48,.35))"><clipPath id="cl'+k+'"><circle cx="'+p.x+'" cy="'+p.y+'" r="15"/></clipPath><circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="#fff"/><image href="'+PHOTO[k]+'" x="'+(p.x-15)+'" y="'+(p.y-15)+'" width="30" height="30" preserveAspectRatio="xMidYMid slice" clip-path="url(#cl'+k+')"/><circle cx="'+(p.x+12.5)+'" cy="'+(p.y+12.5)+'" r="5" fill="'+col+'" stroke="#fff" stroke-width="2"/></g>';});
+ $('crewsG').innerHTML=cg;
+ var P=S.pending,D=S.draft;$('apCount').textContent=String((P?1:0)+(D?1:0));
+ $('apEmpty').classList.toggle('hidden',!!(P||D));$('pubCard').classList.toggle('hidden',!D);
+ if(D){$('pubTitle').textContent=D.title+'. '+D.body;$('pubWhy').textContent='Why it needs you: '+D.why;$('pubWait').textContent='waiting '+Math.round(t-D.since)+' min';}$('apCard').classList.toggle('hidden',!P);
+ if(P){$('apTitle').textContent=P.title;$('apWhy').textContent=P.why;$('apConf').textContent=P.conf+'%';$('apBar').style.width=P.conf+'%';$('apWait').textContent='waiting '+Math.round(t-P.since)+' min';}
+ var cl='',act=0;Object.keys(S.crews).forEach(function(k){var c=S.crews[k],st=ST[c.status];if(c.status!=='Standby')act++;
+  cl+='<div class="crew"><span class="av" style="width:40px;height:40px">'+face(k,40)+'<span class="st" style="background:'+st[2]+'"></span></span><span style="flex:1;min-width:0"><div class="n">'+c.name+'</div><div class="s">'+c.crew+' · '+c.job+'</div></span><span class="badge" style="background:'+st[0]+';color:'+st[1]+'">'+disp(c.status)+'</span></div>';});
+ $('crewList').innerHTML=cl;$('crewCount').textContent=act+' deployed · '+(5-act)+' standby';
+ var KC={Auto:['#EFE9FB','#3E2F6E'],Officer:['#E6ECF8','#1E3A8A'],Waiting:['#FBE8D6','#8A3A0E'],Escalated:['#FBE8D6','#8A3A0E'],Crew:['#DCF3E6','#14532D']};
+ $('log').innerHTML=S.log.length?S.log.map(function(e){var k=KC[e.kind];return '<div class="ev"><div class="h"><span class="badge" style="background:'+k[0]+';color:'+k[1]+'">'+e.kind+'</span><span class="mono" style="font-size:11px;color:#5E566F">'+hhmm(e.t)+'</span></div>'+e.text+'</div>';}).join(''):'<div class="empty">No events yet.</div>';
+ var c3=S.crews.c3,st3=ST[c3.status];
+ $('phStatus').textContent=disp(c3.status);$('phStatus').style.background=st3[0];$('phStatus').style.color=st3[1];
+ $('phJob').textContent=c3.job;$('phWhy').textContent=c3.why?'Why: '+c3.why:'';
+ var al=$('phAlert');if(S.phAlert){al.textContent=S.phAlert;al.classList.remove('hidden');}else al.classList.add('hidden');
+ document.querySelectorAll('.sbig').forEach(function(b){b.classList.toggle('on',b.dataset.st===c3.status);});
+ var R=M.route,base='<path d="M0 430 L300 390 L520 310 L1000 340 M270 700 L335 480 L385 300 L420 0 M610 700 L650 430 L705 210 L725 0 M0 190 L400 215 L700 165 L1000 95" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M90 700 C140 610 120 550 190 510 C260 470 250 410 330 370 C400 335 430 290 500 278 C580 265 600 238 660 208 C720 178 780 182 840 138 C880 108 900 70 1000 48" fill="none" stroke="#C3D4E6" stroke-width="18" stroke-linecap="round"/>';
+ var dots='';M.sensors.forEach(function(G){dots+='<circle cx="'+G.x+'" cy="'+G.y+'" r="11" fill="'+C[M.risk(G,t)]+'" stroke="#fff" stroke-width="4"/>';});
+ var rt=S.routeSafe?'<path d="'+R.normal+'" fill="none" stroke="#9AA1AC" stroke-width="6" stroke-dasharray="4 10" stroke-linecap="round"/><path d="'+R.safe+'" fill="none" stroke="#2E9E62" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>':'<path d="'+R.normal+'" fill="none" stroke="#7A5CC9" stroke-width="10" stroke-linecap="round"/>';
+ $('pubMap').innerHTML=base+z+rt+dots;
+ $('pubFromTo').textContent=R.fromTo;
+ $('pubRoute').innerHTML=S.routeSafe?'<span style="color:#14532D;font-weight:600">'+R.safeTxt+'</span>':'<span style="color:#4A435A">'+R.okTxt+'</span>';
+ $('pubList').innerHTML=S.alerts.length?S.alerts.map(function(a){return '<div class="job" style="flex-direction:row;gap:10px;padding:10px"><span class="dot" style="background:'+a.col+';margin-top:5px"></span><span style="display:flex;flex-direction:column;gap:3px"><span style="font-size:13px;font-weight:600">'+a.title+'</span><span style="font-size:12px;color:#4A435A;line-height:1.4">'+a.body+'</span><span class="mono" style="font-size:10px;color:#5E566F">'+hhmm(a.t)+' · '+a.src+'</span></span></div>';}).join(''):'<div class="empty" style="font-size:12px">No alerts in your area.</div>';
+ var pb=$('pubBanner');if(S.pubBanner){pb.textContent=S.pubBanner;pb.classList.remove('hidden');}else pb.classList.add('hidden');
+ $('pubDot').classList.toggle('hidden',!S.pubNew);
+}
+$('phAv').innerHTML='<span class="av" style="width:44px;height:44px;display:block;box-shadow:0 0 0 3px #fff">'+face('c3',44)+'</span>';
+document.querySelectorAll('.sbig').forEach(function(b){b.onclick=function(){var c=S.crews.c3,st=b.dataset.st;
+ if(st==='En route'&&c.move&&c.move.waiting){c.move.waiting=false;c.move.start=S.t;c.status='En route';S.phAlert=null;log('Crew',c.crew+' accepted and is heading to '+M.sites[c.move.to].name+'.');}
+ else if(st==='On site'&&c.move&&!c.move.waiting){c.at=c.move.to;c.move=null;c.status='On site';log('Crew',c.crew+' marked '+M.onLabel.toLowerCase()+' at '+M.sites[c.at].name+'.');}
+ else if(st==='Done'&&!c.move&&c.status==='On site'){c.status='Standby';c.job='Job complete, awaiting next task';c.why='Marked done by '+(mode==='flood'?'crew lead.':'driver.');log('Crew',c.crew+' finished the job and is available.');}
+ render();};});
+$('play').onclick=function(){if(S.ended)init();setRun(!S.running);render();};
+$('reset').onclick=function(){init();};
+$('again').onclick=function(){init();setRun(true);};
+$('approve').onclick=function(){decide(true);};$('publish').onclick=function(){pubDecide(true);};$('discard').onclick=function(){pubDecide(false);};
+document.querySelectorAll('.pt').forEach(function(b){b.onclick=function(){ptab=b.dataset.p;document.querySelectorAll('.pt').forEach(function(x){x.classList.toggle('sel',x===b);});$('scrCrew').classList.toggle('hidden',ptab!=='crew');$('scrPub').classList.toggle('hidden',ptab!=='pub');$('phCap').textContent=ptab==='crew'?"Crew lead's phone (tap the buttons)":'What drivers and pedestrians see';if(ptab==='pub')S.pubNew=false;render();};});$('reject').onclick=function(){decide(false);};
+document.querySelectorAll('.sp').forEach(function(b){b.onclick=function(){speed=+b.dataset.s;document.querySelectorAll('.sp').forEach(function(x){x.classList.toggle('sel',x===b);});};});
+document.querySelectorAll('.md').forEach(function(b){b.onclick=function(){if(b.dataset.m===mode)return;mode=b.dataset.m;M=MODES[mode];document.querySelectorAll('.md').forEach(function(x){x.classList.toggle('sel',x===b);});init();};});
+init();
+})();
+
+</script>
+</body>
+</html>

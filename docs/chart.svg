@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 186" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#000">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#000"/></marker></defs>
+<g fill="#fff" stroke="#000" stroke-width="1.2">
+<rect x="10" y="10" width="105" height="44" rx="22"/>
+<rect x="145" y="10" width="115" height="44"/>
+<rect x="290" y="10" width="115" height="44"/>
+<rect x="435" y="10" width="115" height="44"/>
+<rect x="575" y="10" width="115" height="44"/>
+<path d="M632 92 L687 120 L632 148 L577 120 Z"/>
+<rect x="420" y="98" width="115" height="44"/>
+<rect x="265" y="98" width="125" height="44"/>
+<rect x="140" y="98" width="100" height="44"/>
+<rect x="15" y="98" width="100" height="44" rx="22"/>
+</g>
+<g text-anchor="middle">
+<text x="62" y="29">Bad weather</text><text x="62" y="42">expected</text>
+<text x="202" y="29">Collect river, rain</text><text x="202" y="42">and weather data</text>
+<text x="347" y="29">Predict floods</text><text x="347" y="42">and ice (AI)</text>
+<text x="492" y="29">Score risk for</text><text x="492" y="42">each place and road</text>
+<text x="632" y="29">Assign crews and</text><text x="632" y="42">gritters to jobs</text>
+<text x="632" y="117">Risky</text><text x="632" y="129">move?</text>
+<text x="477" y="117">Officer approves</text><text x="477" y="130">or changes it</text>
+<text x="327" y="117">Send crews and</text><text x="327" y="130">alert the public</text>
+<text x="190" y="117">Log and learn</text><text x="190" y="130">from results</text>
+<text x="65" y="124">Done</text>
+</g>
+<g stroke="#000" stroke-width="1.2" fill="none" marker-end="url(#a)">
+<path d="M115 32H143"/><path d="M260 32H288"/><path d="M405 32H433"/><path d="M550 32H573"/>
+<path d="M632 54V90"/>
+<path d="M577 120H537"/>
+<path d="M420 120H392"/>
+<path d="M632 148V172H327V144"/>
+<path d="M265 120H242"/>
+<path d="M140 120H117"/>
+</g>
+<text x="556" y="114" text-anchor="middle" font-weight="bold">Yes</text>
+<text x="480" y="168" text-anchor="middle" font-weight="bold">No: sent automatically</text>
+</svg>

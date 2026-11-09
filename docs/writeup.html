@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+@page{size:A4;margin:14mm 15mm 13mm}
+*{box-sizing:border-box}
+body{font-family:"Georgia",serif;font-size:9.6pt;line-height:1.38;color:#1d1b24;margin:0}
+h1{font-size:16.5pt;line-height:1.2;margin:0 0 2pt;color:#3E2F6E;font-weight:600}
+.by{font-family:Helvetica,Arial,sans-serif;font-size:8pt;color:#6b6480;margin-bottom:7pt;border-bottom:1.5pt solid #3E2F6E;padding-bottom:5pt}
+h2{font-family:Helvetica,Arial,sans-serif;font-size:10.5pt;color:#3E2F6E;margin:8pt 0 3pt;font-weight:700}
+p{margin:0 0 4pt}
+ul,ol{margin:0 0 4pt;padding-left:15pt}
+li{margin:0 0 1.5pt}
+table{width:100%;border-collapse:collapse;font-family:Helvetica,Arial,sans-serif;font-size:8pt;margin:3pt 0 5pt}
+th{background:#EEE9F8;color:#3E2F6E;text-align:left;font-weight:700;padding:3pt 5pt;border-bottom:1pt solid #c9bfe3}
+td{padding:2.6pt 5pt;border-bottom:.5pt solid #e3ddf0}
+td.n,th.n{text-align:right}
+b{color:#2a2140}
+.flow{display:flex;align-items:stretch;gap:0;margin:4pt 0 3pt;font-family:Helvetica,Arial,sans-serif}
+.box{flex:1;border:1pt solid #c9bfe3;border-radius:4pt;padding:4pt 6pt;background:#fff}
+.box.d{background:#EEE9F8;border-color:#7B66C9}
+.box small{display:block;font-size:6.8pt;color:#7B66C9;text-transform:uppercase;letter-spacing:.5pt;font-weight:700}
+.box strong{display:block;font-size:8.5pt;color:#3E2F6E}
+.box span{font-size:7.4pt;color:#3d3650;line-height:1.3;display:block}
+.ar{width:14pt;display:flex;align-items:center;justify-content:center;color:#7B66C9;font-size:11pt}
+.cap{font-family:Helvetica,Arial,sans-serif;font-size:7.4pt;color:#6b6480;margin-bottom:4pt}
+.two{display:flex;gap:12pt}.two>div{flex:1}
+.pb{break-before:page}
+</style></head><body>
+<h1>FloodCrew: An Intelligent Decision Support System for Flood and Ice Crew Deployment</h1>
+<div class="by">John Ajiboye · MSc AI with Data Analytics, Teesside University · Intelligent Decision Support Systems · November 2026</div>
+
+<h2>What is FloodCrew?</h2>
+<p>FloodCrew is a smart decision support system for a council. When there is flooding, snow or black ice, the council has only a few crews and gritters. FloodCrew predicts where trouble will hit a few hours early, ranks the places most at risk, suggests where to send each crew and gritter, and <b>alerts the public</b> about flooded and icy roads near them. A person stays in charge: small moves happen automatically, big ones need the officer's approval. In tests, it protected care homes, schools and hospital routes more often than waiting for the official warning, and gritted more icy roads in time while using fewer runs.</p>
+
+<h2>Aim and objectives</h2>
+<p><b>Aim:</b> protect the most vulnerable places and people before bad weather hits, and keep the public informed.</p>
+<ol>
+<li>Predict river levels 6 hours ahead and icy roads overnight.</li>
+<li>Give each place or road a risk score (how likely × how bad).</li>
+<li>Suggest the best place to send each crew and gritter.</li>
+<li>Let the officer try "what if" (more rain, fewer crews, slower roads).</li>
+<li>Do small moves automatically and send big ones to the officer, with reasons.</li>
+<li>Alert the public: flooded areas, icy roads and safer routes.</li>
+<li>Test it fairly against what councils do today.</li>
+</ol>
+
+<h2>The problem</h2>
+<p>Crews are few and conditions change fast. Waiting for the official warning is often too late, and guessing can leave a care home, school or hospital road unprotected. Drivers and people on foot often don't know a road is flooded or icy until they reach it. This is a semi-structured decision: the data is uncertain and the choice has real trade-offs, so a person should decide with the system's help.</p>
+
+<h2>Who uses it</h2>
+<table>
+<tr><th style="width:24%">User</th><th>What they do</th></tr>
+<tr><td>Emergency officer</td><td>Watches the forecasts, checks the plan, approves or rejects big moves and public alerts</td></tr>
+<tr><td>Crew lead</td><td>Gets jobs and the reason for each on a phone, reports progress</td></tr>
+<tr><td>Public (drivers, pedestrians, residents)</td><td>Gets alerts for their street, sees flooded and icy roads on a map, and gets a safer route</td></tr>
+</table>
+
+<h2>How it works</h2>
+<div class="flow">
+<div class="box"><small>Intelligence</small><strong>Monitor</strong><span>Reads river, rain and weather data and predicts floods and ice</span></div>
+<div class="ar">→</div>
+<div class="box"><small>Design</small><strong>Plan</strong><span>Scores risk and suggests where crews and gritters go</span></div>
+<div class="ar">→</div>
+<div class="box d"><small>Choice</small><strong>Decide &amp; alert</strong><span>Officer approves; crews sent; public alerted</span></div>
+<div class="ar">→</div>
+<div class="box"><small>Review</small><strong>Learn</strong><span>Checks results and logs every decision to improve</span></div>
+</div>
+<div class="cap">FloodCrew follows Simon's four decision stages.</div>
+
+<h2>Public alerts</h2>
+<ul>
+<li><b>Sign up by postcode</b> to get a text, email or app alert when flooding or ice is expected near your street.</li>
+<li><b>Live map</b> showing flooded roads, icy roads and roads already gritted.</li>
+<li><b>Safer route</b> that avoids flooded or icy roads for drivers and pedestrians.</li>
+<li>Alerts that go beyond official Environment Agency or Met Office warnings need the officer's approval, so people are not sent false alarms.</li>
+</ul>
+
+<h2>What makes it intelligent</h2>
+<ul>
+<li><b>Data:</b> Environment Agency river levels and rainfall (free, open data) and weather forecasts for ice. For now it runs on simulated data shaped like the River Tees and two winters of road temperatures.</li>
+<li><b>Prediction:</b> machine learning (ridge regression) learns from past data to predict river levels and road temperature. It was chosen because every input's effect can be explained.</li>
+<li><b>Risk rules:</b> risk = how likely × how bad, with extra weight for care homes, schools and hospital routes.</li>
+<li><b>Best plan:</b> an optimiser (the Hungarian algorithm) matches each crew or gritter to the best job, counting travel time.</li>
+<li><b>Safety rules:</b> the officer must approve a move if it leaves a protected site uncovered, the prediction is unsure, or it sends most crews to one area.</li>
+<li><b>Built with:</b> Python for the models, and a web app with officer, crew and public pages.</li>
+</ul>
+
+<h2>Results</h2>
+<p>Tested on data the models had never seen (simulated for now). Today's method is in brackets.</p>
+<div class="two">
+<div>
+<p><b>Flooding:</b> 6-hour river prediction.</p>
+<table>
+<tr><th>Gauge</th><th class="n">Off by</th><th class="n">Warnings caught</th></tr>
+<tr><td>Broken Scar</td><td class="n">3.2 cm (9.8)</td><td class="n">96% (68%)</td></tr>
+<tr><td>Low Moor</td><td class="n">2.2 cm (9.2)</td><td class="n">100% (71%)</td></tr>
+<tr><td>Yarm</td><td class="n">2.9 cm (8.8)</td><td class="n">98% (72%)</td></tr>
+<tr><td>Stockton</td><td class="n">3.6 cm (7.5)</td><td class="n">96% (73%)</td></tr>
+</table>
+</div>
+<div>
+<p><b>Snow and ice:</b> roads gritted before ice formed.</p>
+<table>
+<tr><th>Gritters</th><th class="n">All roads</th><th class="n">Hospital + school</th><th class="n">Runs</th></tr>
+<tr><td>1</td><td class="n">79% (50%)</td><td class="n">82% (62%)</td><td class="n">353 (436)</td></tr>
+<tr><td>2</td><td class="n">83% (71%)</td><td class="n">85% (73%)</td><td class="n">412 (436)</td></tr>
+<tr><td>3</td><td class="n">85% (76%)</td><td class="n">89% (82%)</td><td class="n">420 (436)</td></tr>
+</table>
+</div>
+</div>
+<ul>
+<li><b>Floods:</b> with 5 crews, a crew was already on site at <b>12 of 13</b> floods at protected sites, compared with 7 of 13 when crews wait for the official warning.</li>
+<li><b>Ice:</b> road temperature predictions were off by <b>0.85 °C</b>, compared with 2.90 °C. The biggest gain is when gritters are scarce, and it used fewer runs.</li>
+</ul>
+
+<h2>People stay in control</h2>
+<p>FloodCrew suggests; the officer decides. Every action is logged with its reason and can be undone, and each suggestion shows why it was made. The system supports official warnings and does not replace them.</p>
+
+<h2>Limitations and next steps</h2>
+<ul>
+<li>Results use simulated data; next, retrain and test on real Environment Agency and weather data.</li>
+<li>Flood levels and gritting priorities are estimates; the council's real maps and routes would replace them.</li>
+<li>Next, test the public alerts with real users to check they are clear and useful.</li>
+</ul>
+</body></html>
