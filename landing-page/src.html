@@ -263,7 +263,18 @@ function resolve(q){q=String(q||'').trim();if(!q)return {err:'empty'};
 var A135='M210 560 C240 520 250 480 280 450 C310 420 330 400 360 360 C380 330 392 290 400 250 L410 140';
 var HAZ={flood:[{n:'Yarm High Street',x:200,y:522,rx:36,ry:24},{n:'Eaglescliffe riverside',x:262,y:452,rx:26,ry:17},{n:'Stockton riverside',x:420,y:312,rx:28,ry:18}],
  icy:[{n:'Ingleby Barwick hill',x:452,y:548,r:30},{n:'Linthorpe Road',x:778,y:272,r:22}],
- grit:[{n:'Yarm Road (A135)',d:A135},{n:'Durham Road',d:'M40 214 C150 215 300 212 420 210'},{n:'Marton Road (hospital route)',d:'M650 318 C660 360 690 400 700 470'}],
+ grit:[ /* every road marked gritted in the "Is my road gritted?" sample list; names must match it */
+  {n:'Borough Road',d:'M790 244 L845 238'},{n:'Riverside Park Road',d:'M790 205 C810 200 830 196 850 192'},
+  {n:'Ormesby Road',d:'M850 238 C860 260 868 280 872 305'},{n:'Cargo Fleet Lane',d:'M885 245 L915 250'},
+  {n:'Marton Road (hospital route)',d:'M650 318 C660 360 690 400 700 470'},{n:'Ayresome Green Lane',d:'M690 345 L740 340'},
+  {n:'Normanby Road',d:'M880 345 C890 365 900 385 905 410'},{n:'Ladgate Lane',d:'M810 500 L870 505'},
+  {n:'Stainton Way',d:'M710 560 C740 555 770 560 800 570'},
+  {n:'Yarm High Street',d:'M195 505 L205 540'},{n:'Thirsk Road',d:'M180 600 C190 630 200 660 210 690'},
+  {n:'Yarm Road',d:A135},{n:'Thornaby Road',d:'M520 400 C540 420 555 440 565 465'},
+  {n:'Durham Road',d:'M40 214 C150 215 300 212 420 210'},{n:'Hardwick Road (hospital route)',d:'M230 170 C240 185 250 200 260 230'},
+  {n:'Junction Road',d:'M418 160 L470 166'},{n:'Station Road',d:'M445 140 L440 198'},
+  {n:'Stillington Road',d:'M60 160 C90 165 120 170 150 168'},{n:'Wynyard Road',d:'M470 140 C485 150 500 158 520 162'},
+  {n:'Cowpen Lane',d:'M590 150 L650 158'}],
  closed:[{n:'Yarm riverside path',d:'M160 642 C170 592 132 562 180 536'},{n:'Riverside Road, Stockton',d:'M428 304 C466 296 480 312 508 292'}]};
 var ROADS=[{n:'A19',t:2,d:'M610 760 C615 650 625 560 615 480 C605 420 590 360 575 300 C560 240 552 190 540 100'},{n:'A66',t:2,d:'M0 215 C150 215 300 212 420 210 C520 208 600 198 700 188 C800 178 880 170 1000 160'},
  {n:'A135',t:1,d:A135},{n:'A1032',t:1,d:'M480 320 C540 318 600 322 650 318 C720 312 800 300 920 292'},{n:'A174',t:1,d:'M560 520 C620 500 660 482 720 468 C800 450 860 445 1000 440'},{n:'A67',t:1,d:'M40 600 C120 590 170 575 210 560'},
@@ -425,7 +436,8 @@ pm.innerHTML=BASE+
  '<g data-l="closed">'+HZL.closed.map(function(h){return '<path d="'+h.d+'" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none"/><path d="'+h.d+'" stroke="#D93A3A" stroke-width="4" stroke-dasharray="7 5" fill="none"/>'+hitLine(h,'closed');}).join('')+'</g>'+
  '<g id="pmRoute"></g>';
 document.querySelectorAll('.chips button').forEach(function(b){b.onclick=function(){var on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);var g=pm.querySelector('g[data-l="'+b.dataset.l+'"]');if(on)g.removeAttribute('display');else g.setAttribute('display','none');};});
-pm.addEventListener('click',function(e){var t=e.target.closest('[data-n]');document.getElementById('minfo').innerHTML=t?'<b style="color:#2A1F52">'+t.dataset.n+'</b> · '+t.dataset.k:'Tap a hazard for details.';});
+pm.addEventListener('click',function(e){var t=e.target.closest('[data-n]');var gr=t&&t.dataset.k==='Gritted'&&GR.filter(function(r){return r.n===t.dataset.n;})[0];
+ document.getElementById('minfo').innerHTML=t?'<b style="color:#2A1F52">'+t.dataset.n+'</b> · '+t.dataset.k+(gr?' · last '+gr.last.toLowerCase()+', next '+gr.next.toLowerCase():''):'Tap a hazard for details.';});
 function centreMap(x){var w=document.getElementById('mapw');w.scrollLeft=(x-40)/880*pm.clientWidth-w.clientWidth/2;}
 requestAnimationFrame(function(){centreMap(470);});
 function pin(x,y,txt,fill){var tw=txt.length*7+20,lx=Math.max(44,Math.min(916-tw,x-tw/2));
