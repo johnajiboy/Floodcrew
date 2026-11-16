@@ -42,7 +42,7 @@ python build.py
 ```
 cd python-ml
 pip install -r requirements.txt
-python -m floodcrew.fetch_ea          # EA river levels + rainfall, 2023-01-01 to today, resampled to hourly
+python -m floodcrew.fetch_ea          # EA river levels + rainfall, 2015-01-01 to today, resampled to hourly
 python -m floodcrew.train
 python -m floodcrew.evaluate
 python -m floodcrew.ice --gritters 2  # Open-Meteo weather for Middlesbrough, winters 2024/25 and 2025/26

@@ -1,8 +1,8 @@
 """Download real Environment Agency river levels and rainfall for the Tees.
 
 Usage:
-    python -m floodcrew.fetch_ea                                         # 2023-01-01 to today (default)
-    python -m floodcrew.fetch_ea download --start 2023-01-01 --end 2026-11-16
+    python -m floodcrew.fetch_ea                                         # 2015-01-01 to today (default)
+    python -m floodcrew.fetch_ea download --start 2015-01-01 --end 2026-11-16
     python -m floodcrew.fetch_ea discover                                # list Tees level stations and rain gauges
 
 Sources (both Environment Agency, Open Government Licence):
@@ -34,7 +34,7 @@ RAW = DATA / "raw"
 N_RAIN = 6                  # rain gauges averaged into one catchment series
 MIN_RAIN_COVERAGE = 0.6     # skip rain gauges with hourly data for less than 60% of the period
 BAD_QUALITY = {"Suspect", "Missing", "Rejected"}
-DEFAULT_START = "2023-01-01"
+DEFAULT_START = "2015-01-01"
 S = requests.Session()
 S.headers["User-Agent"] = "floodcrew-student-project"
 
