@@ -5,8 +5,8 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 from scipy.stats import norm
 
-from .config import (CONFIDENCE_AUTO, DEPOT, MAP_KM_PER_UNIT, MIN_SLOT_PROB, PROTECTED_WEIGHT, ROAD_SPEED_KMH,
-                     SITES, TRAVEL_WEIGHT)
+from .config import (CONFIDENCE_AUTO, DEPOT, IDLE_MIN_PROB, MAP_KM_PER_UNIT, MIN_SLOT_PROB, PROTECTED_WEIGHT,
+                     ROAD_SPEED_KMH, SITES, TRAVEL_WEIGHT)
 
 SITE = {s["id"]: s for s in SITES}
 
@@ -61,6 +61,17 @@ def plan(risks, crews, speed=ROAD_SPEED_KMH, covered=None):
         r, k, v = slots[j]
         moves.append({"crew": c["name"], "from": c["at"], "to": r["site"], "standby": False, "value": round(v, 1),
                       "minutes": round(travel_minutes(c["at"], r["site"], speed)), "p": round(r["p"], 3), "second_crew": k == 2})
+    # Idle crews: send them to the next highest-risk sites that nobody covers yet. The top uncovered sites are matched
+    # to idle crews by least total travel, so a crew already standing at one of them stays there.
+    idle = [i for i, m in enumerate(moves) if m["standby"]]
+    taken = {s for s, n in covered.items() if n > 0} | {m["to"] for m in moves if not m["standby"]}
+    nxt = [r for r in sorted(risks, key=lambda r: -r["score"]) if r["site"] not in taken and r["p"] >= IDLE_MIN_PROB][:len(idle)]
+    if idle and nxt:
+        cost = np.array([[travel_minutes(crews[i]["at"], r["site"], speed) for r in nxt] for i in idle])
+        for a, b in zip(*linear_sum_assignment(cost)):
+            c, r = crews[idle[a]], nxt[b]
+            moves[idle[a]] = {"crew": c["name"], "from": c["at"], "to": r["site"], "standby": False, "value": round(r["score"], 1),
+                              "minutes": round(cost[a, b]), "p": round(r["p"], 3), "second_crew": False, "idle_reposition": True}
     return moves
 
 

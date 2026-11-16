@@ -8,6 +8,7 @@
     "stockton": 3.2
   },
   "warn_source": "official EA flood alert level (top of normal range)",
+  "planner_model": "gbm",
   "gauges": {
     "broken": {
       "n_train": 76085,
@@ -166,10 +167,101 @@
       }
     }
   },
+  "evaluation_runs": {
+    "1.5": {
+      "2": {
+        "floodcrew": {
+          "sites_protected": 22,
+          "sites_flooded": 42,
+          "protected_sites_covered": 11,
+          "protected_sites_flooded": 13
+        },
+        "current_practice": {
+          "sites_protected": 25,
+          "sites_flooded": 42,
+          "protected_sites_covered": 9,
+          "protected_sites_flooded": 13
+        }
+      },
+      "3": {
+        "floodcrew": {
+          "sites_protected": 34,
+          "sites_flooded": 42,
+          "protected_sites_covered": 11,
+          "protected_sites_flooded": 13
+        },
+        "current_practice": {
+          "sites_protected": 30,
+          "sites_flooded": 42,
+          "protected_sites_covered": 10,
+          "protected_sites_flooded": 13
+        }
+      },
+      "5": {
+        "floodcrew": {
+          "sites_protected": 35,
+          "sites_flooded": 42,
+          "protected_sites_covered": 11,
+          "protected_sites_flooded": 13
+        },
+        "current_practice": {
+          "sites_protected": 31,
+          "sites_flooded": 42,
+          "protected_sites_covered": 10,
+          "protected_sites_flooded": 13
+        }
+      }
+    },
+    "2.0": {
+      "2": {
+        "floodcrew": {
+          "sites_protected": 22,
+          "sites_flooded": 42,
+          "protected_sites_covered": 11,
+          "protected_sites_flooded": 13
+        },
+        "current_practice": {
+          "sites_protected": 25,
+          "sites_flooded": 42,
+          "protected_sites_covered": 9,
+          "protected_sites_flooded": 13
+        }
+      },
+      "3": {
+        "floodcrew": {
+          "sites_protected": 30,
+          "sites_flooded": 42,
+          "protected_sites_covered": 12,
+          "protected_sites_flooded": 13
+        },
+        "current_practice": {
+          "sites_protected": 30,
+          "sites_flooded": 42,
+          "protected_sites_covered": 10,
+          "protected_sites_flooded": 13
+        }
+      },
+      "5": {
+        "floodcrew": {
+          "sites_protected": 36,
+          "sites_flooded": 42,
+          "protected_sites_covered": 12,
+          "protected_sites_flooded": 13
+        },
+        "current_practice": {
+          "sites_protected": 31,
+          "sites_flooded": 42,
+          "protected_sites_covered": 10,
+          "protected_sites_flooded": 13
+        }
+      }
+    }
+  },
   "evaluation": {
     "data": "data/tees_hourly.csv",
     "crews": 3,
     "protected_weight": 2.0,
+    "planner_model": "gbm",
     "storms": [
       {
         "start": "2023-12-04 16:00:00+00:00",
@@ -263,9 +355,9 @@
       }
     ],
     "floodcrew": {
-      "sites_protected": 21,
+      "sites_protected": 30,
       "sites_flooded": 42,
-      "protected_sites_covered": 11,
+      "protected_sites_covered": 12,
       "protected_sites_flooded": 13
     },
     "current_practice": {
@@ -278,6 +370,92 @@
       "2023/24": 7,
       "2024/25": 6,
       "2025/26": 5
+    }
+  },
+  "ice_by_gritters": {
+    "1": {
+      "weather": "Open-Meteo hourly weather, Middlesbrough, winters 2024/25, 2025/26",
+      "hours": 7248,
+      "gritters": 1,
+      "road_temperature": "estimated from air temperature and cloud cover (no road sensors)",
+      "mae": 0.8382,
+      "mae_persistence": 1.9214,
+      "precision": 0.3152,
+      "recall": 0.4915,
+      "precision_air_rule": 0.1848,
+      "recall_air_rule": 0.5763,
+      "floodcrew": {
+        "events": 17,
+        "treated_in_time": 9,
+        "protected_events": 10,
+        "protected_in_time": 5,
+        "runs": 28,
+        "gritted_in_time_pct": 52.9
+      },
+      "current_practice": {
+        "events": 17,
+        "treated_in_time": 3,
+        "protected_events": 10,
+        "protected_in_time": 2,
+        "runs": 52,
+        "gritted_in_time_pct": 17.6
+      }
+    },
+    "2": {
+      "weather": "Open-Meteo hourly weather, Middlesbrough, winters 2024/25, 2025/26",
+      "hours": 7248,
+      "gritters": 2,
+      "road_temperature": "estimated from air temperature and cloud cover (no road sensors)",
+      "mae": 0.8382,
+      "mae_persistence": 1.9214,
+      "precision": 0.3152,
+      "recall": 0.4915,
+      "precision_air_rule": 0.1848,
+      "recall_air_rule": 0.5763,
+      "floodcrew": {
+        "events": 17,
+        "treated_in_time": 9,
+        "protected_events": 10,
+        "protected_in_time": 5,
+        "runs": 36,
+        "gritted_in_time_pct": 52.9
+      },
+      "current_practice": {
+        "events": 17,
+        "treated_in_time": 6,
+        "protected_events": 10,
+        "protected_in_time": 5,
+        "runs": 52,
+        "gritted_in_time_pct": 35.3
+      }
+    },
+    "3": {
+      "weather": "Open-Meteo hourly weather, Middlesbrough, winters 2024/25, 2025/26",
+      "hours": 7248,
+      "gritters": 3,
+      "road_temperature": "estimated from air temperature and cloud cover (no road sensors)",
+      "mae": 0.8382,
+      "mae_persistence": 1.9214,
+      "precision": 0.3152,
+      "recall": 0.4915,
+      "precision_air_rule": 0.1848,
+      "recall_air_rule": 0.5763,
+      "floodcrew": {
+        "events": 17,
+        "treated_in_time": 10,
+        "protected_events": 10,
+        "protected_in_time": 6,
+        "runs": 39,
+        "gritted_in_time_pct": 58.8
+      },
+      "current_practice": {
+        "events": 17,
+        "treated_in_time": 9,
+        "protected_events": 10,
+        "protected_in_time": 8,
+        "runs": 52,
+        "gritted_in_time_pct": 52.9
+      }
     }
   },
   "ice": {
@@ -306,50 +484,6 @@
       "protected_in_time": 5,
       "runs": 52,
       "gritted_in_time_pct": 35.3
-    }
-  },
-  "evaluation_by_crews": {
-    "2": {
-      "floodcrew": {
-        "sites_protected": 21,
-        "sites_flooded": 42,
-        "protected_sites_covered": 11,
-        "protected_sites_flooded": 13
-      },
-      "current_practice": {
-        "sites_protected": 25,
-        "sites_flooded": 42,
-        "protected_sites_covered": 9,
-        "protected_sites_flooded": 13
-      }
-    },
-    "3": {
-      "floodcrew": {
-        "sites_protected": 21,
-        "sites_flooded": 42,
-        "protected_sites_covered": 11,
-        "protected_sites_flooded": 13
-      },
-      "current_practice": {
-        "sites_protected": 30,
-        "sites_flooded": 42,
-        "protected_sites_covered": 10,
-        "protected_sites_flooded": 13
-      }
-    },
-    "5": {
-      "floodcrew": {
-        "sites_protected": 27,
-        "sites_flooded": 42,
-        "protected_sites_covered": 11,
-        "protected_sites_flooded": 13
-      },
-      "current_practice": {
-        "sites_protected": 31,
-        "sites_flooded": 42,
-        "protected_sites_covered": 10,
-        "protected_sites_flooded": 13
-      }
     }
   }
 }

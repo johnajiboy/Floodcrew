@@ -217,5 +217,11 @@ if __name__ == "__main__":
         out[pol] = {**r, "gritted_in_time_pct": round(100 * r["treated_in_time"] / max(1, r["events"]), 1)}
         print(f"{pol:>17}: ice events gritted in time {r['treated_in_time']}/{r['events']} ({r['treated_in_time'] / max(1, r['events']):.0%}), "
               f"hospital + school {r['protected_in_time']}/{r['protected_events']}, gritting runs {r['runs']}")
-    from .train import update_metrics
-    update_metrics("ice", out)
+    import json
+    from .train import OUT, update_metrics
+    path = OUT / "metrics.json"
+    by_g = json.loads(path.read_text()).get("ice_by_gritters", {}) if path.exists() else {}
+    by_g[str(a.gritters)] = out
+    update_metrics("ice_by_gritters", dict(sorted(by_g.items(), key=lambda kv: int(kv[0]))))
+    if a.gritters == 2:   # the headline ice result is 2 gritters
+        update_metrics("ice", out)

@@ -5,9 +5,9 @@ FloodCrew helps an emergency officer decide where to send a limited number of cr
 | IDSS part | File | What it does |
 |---|---|---|
 | Data | `floodcrew/fetch_ea.py`, `floodcrew/synthetic.py` | Real Environment Agency river levels and rainfall (default), or a simulated Tees catchment |
-| Model (ML) | `floodcrew/train.py` | Forecasts each gauge 6 hours ahead (ridge regression + gradient boosting), tested against persistence |
+| Model (ML) | `floodcrew/train.py` | Forecasts each gauge 6 hours ahead (ridge regression + gradient boosting), tested against persistence. The planner uses gradient boosting for every gauge (`PLANNER_MODEL` in `config.py`) |
 | Knowledge base (rules) | `floodcrew/plan.py` | Flood probability per site, impact (homes, protected sites), approval rules |
-| Optimisation | `floodcrew/plan.py` | Hungarian assignment of crews to sites (value protected minus travel time) |
+| Optimisation | `floodcrew/plan.py` | Hungarian assignment of crews to sites (value protected minus travel time); crews left idle are sent to the next highest-risk uncovered sites (at least 1% flood chance) |
 | Evaluation | `floodcrew/evaluate.py` | Replays every test storm: FloodCrew vs current practice |
 | Snow & ice | `floodcrew/ice.py` | Real Middlesbrough weather (Open-Meteo), estimated road temperature, ice risk per route, gritter assignment, replay vs precautionary runs |
 | Interface | `api.py` | FastAPI endpoints for forecast, plan and metrics |
@@ -63,30 +63,45 @@ Hydrology data service, Open Government Licence. Weather data by Open-Meteo.com 
 
 ## 4. Results on real data (11.9 years, 2015-01-02 to 2026-11-16; test period 28 Nov 2023 to 16 Nov 2026)
 
-| Gauge | EA alert level | Hours above it (test) | MAE ridge | MAE boosting | MAE persistence | Warning recall ridge | Warning recall boosting | Warning recall persistence |
-|---|---|---|---|---|---|---|---|---|
-| Broken Scar | 2.50 m | 15 | 3.74 cm | 3.24 cm | 3.90 cm | 0% | 0% | 0% |
-| Low Moor | 4.50 m | 68 | 7.25 cm | 2.43 cm | 8.21 cm | 49% | 85% | 46% |
-| Yarm | 1.80 m | 222 | 3.67 cm | 3.12 cm | 4.41 cm | 68% | 62% | 56% |
-| Stockton | 3.20 m | 10 | 2.04 cm | 1.78 cm | 2.18 cm | 0% | 0% | 0% |
+All of these are stored in `models/metrics.json`: `gauges` (train), `evaluation_runs[protected weight][crews]` and
+`evaluation` (3 crews, weight 2.0) from evaluate, `ice_by_gritters[n]` and `ice` (2 gritters) from ice.
+Run order: `train`, then `evaluate` and `ice` (train rewrites the file).
 
-Broken Scar and Stockton only reach their alert levels briefly (15 and 10 hours in three years) and no model
-caught those hours.
+### Forecast accuracy (6 hours ahead)
 
-Crew replay (all 18 test-period storms: 7 in 2023/24, 6 in 2024/25, 5 in 2025/26). Site flood levels are the
-gauge's EA alert level plus the site offset in `config.py`; no site floods at the alert level itself (care home
-+0.20 m, school +0.35 m, hospital road +0.50 m), so current practice, which dispatches at the alert level, has time to act.
-Use `--max-storms N` to replay only the first N storms.
+| Gauge | Warning threshold | Hours above it (test) | MAE ridge | MAE boosting | MAE persistence | Recall ridge | Recall boosting | Recall persistence | Planner uses |
+|---|---|---|---|---|---|---|---|---|---|
+| Broken Scar | 2.50 m, official EA | 15 | 3.74 cm | 3.24 cm | 3.90 cm | 0% | 0% | 0% | boosting |
+| Low Moor | 4.50 m, official EA | 68 | 7.25 cm | 2.43 cm | 8.21 cm | 48.5% | 85.3% | 45.6% | boosting |
+| Yarm | 1.80 m, official EA | 222 | 3.67 cm | 3.12 cm | 4.41 cm | 68.0% | 61.7% | 55.9% | boosting |
+| Stockton | 3.20 m, official EA | 10 | 2.04 cm | 1.78 cm | 2.18 cm | 0% | 0% | 0% | boosting |
 
-| Crews | Protected sites covered: FloodCrew | Current practice | All flooded sites covered: FloodCrew | Current practice |
-|---|---|---|---|---|
-| 2 | 11/13 (85%) | 9/13 (69%) | 21/42 (50%) | 25/42 (60%) |
-| 3 | 11/13 (85%) | 10/13 (77%) | 21/42 (50%) | 30/42 (71%) |
-| 5 | 11/13 (85%) | 10/13 (77%) | 27/42 (64%) | 31/42 (74%) |
+Recall is reported as "no warning events" for any gauge that never reaches its threshold in the test period
+(none at present).
 
-Each `evaluate --crews N` run is stored under `evaluation_by_crews` in `metrics.json`; `evaluation` is the 3-crew run.
-Snow & ice (2 gritters, last 25% of winter 2025/26): ice events gritted in time 9/17 = 53% (current practice 6/17 = 35%),
-with 36 gritting runs instead of 52.
+### Crew deployment (all 18 test-period storms; FloodCrew vs current practice)
+
+Site flood levels are the gauge's EA alert level plus the site offset in `config.py`; no site floods at the alert level
+itself, and current practice dispatches at the alert level. Use `--max-storms N` to replay only the first N storms.
+
+| Protected weight | Crews | Protected sites covered: FloodCrew | Current practice | All flooded sites covered: FloodCrew | Current practice |
+|---|---|---|---|---|---|
+| 1.5 | 2 | 11/13 (85%) | 9/13 (69%) | 22/42 (52%) | 25/42 (60%) |
+| 1.5 | 3 | 11/13 (85%) | 10/13 (77%) | 34/42 (81%) | 30/42 (71%) |
+| 1.5 | 5 | 11/13 (85%) | 10/13 (77%) | 35/42 (83%) | 31/42 (74%) |
+| 2.0 | 2 | 11/13 (85%) | 9/13 (69%) | 22/42 (52%) | 25/42 (60%) |
+| 2.0 | 3 | 12/13 (92%) | 10/13 (77%) | 30/42 (71%) | 30/42 (71%) |
+| 2.0 | 5 | 12/13 (92%) | 10/13 (77%) | 36/42 (86%) | 31/42 (74%) |
+
+### Snow and ice (last 25% of winter 2025/26; FloodCrew vs precautionary runs)
+
+| Gritters | Ice events gritted in time | Hospital route + school road in time | Gritting runs |
+|---|---|---|---|
+| 1 | 9/17 (53%) vs 3/17 (18%) | 5/10 vs 2/10 | 28 vs 52 |
+| 2 | 9/17 (53%) vs 6/17 (35%) | 5/10 vs 5/10 | 36 vs 52 |
+| 3 | 10/17 (59%) vs 9/17 (53%) | 6/10 vs 8/10 | 39 vs 52 |
+
+Road temperature 6 h ahead: MAE 0.84 °C (persistence 1.92 °C), the same for every gritter count.
 
 ## 5. What to report
 

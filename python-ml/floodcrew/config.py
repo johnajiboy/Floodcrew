@@ -34,9 +34,13 @@ SITES = [
 DEPOT = {"id": "depot", "name": "Middlesbrough depot", "x": 775, "y": 350}
 CREWS = ["Marco Santos", "Liam Hart", "Amara Okafor", "Daniel Adeyemi", "Omar Haddad"]
 
+# Forecast model the planner uses for every gauge: "gbm" (gradient boosting) or "ridge"
+PLANNER_MODEL = "gbm"
+
 # Decision rules (knowledge base)
 PROTECTED_WEIGHT = 60      # impact points added per protected site (multiplied by the what-if weight)
 MIN_SLOT_PROB = 0.15       # only plan for sites with at least this flood probability
+IDLE_MIN_PROB = 0.01       # idle crews are pre-positioned at uncovered sites with at least this flood probability
 CONFIDENCE_AUTO = 0.70     # auto-approve only when the forecast is at least this confident
 ROAD_SPEED_KMH = 30
 TRAVEL_WEIGHT = 0.6        # value lost per minute of travel

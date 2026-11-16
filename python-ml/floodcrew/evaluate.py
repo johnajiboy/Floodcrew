@@ -14,7 +14,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from .config import CREWS, GAUGES, HORIZON_H, SITES, TRAIN_FRACTION
+from .config import CREWS, GAUGES, HORIZON_H, PLANNER_MODEL, SITES, TRAIN_FRACTION
 from .features import build
 from .plan import plan, site_risk, travel_minutes
 from .train import DEFAULT_DATA, OUT, load, update_metrics, warning_levels
@@ -41,7 +41,7 @@ def run(data, n_crews, protected_weight, max_storms=None):
     warn = warning_levels(df)
     models = {g["id"]: joblib.load(OUT / f"{g['id']}.joblib") for g in GAUGES}
     feats = {g["id"]: build(df, g["id"])[0] for g in GAUGES}
-    preds = {gid: pd.Series(models[gid]["ridge"].predict(feats[gid]), index=feats[gid].index) for gid in models}
+    preds = {gid: pd.Series(models[gid][PLANNER_MODEL].predict(feats[gid]), index=feats[gid].index) for gid in models}
     totals = {"floodcrew": np.zeros(4), "current_practice": np.zeros(4)}
     storms = find_storms(df, split, warn, max_storms)
     for (start, peak, level) in storms:
@@ -89,7 +89,7 @@ def run(data, n_crews, protected_weight, max_storms=None):
             flooded = [s for s in SITES if s["id"] in flooded_at]
             ok = [s for s in flooded if s["id"] in protected_at]
             totals[policy] += [len(ok), len(flooded), sum(s["protected"] for s in ok), sum(s["protected"] for s in flooded)]
-    result = {"data": data, "crews": n_crews, "protected_weight": protected_weight,
+    result = {"data": data, "crews": n_crews, "protected_weight": protected_weight, "planner_model": PLANNER_MODEL,
               "storms": [{"start": str(df.index[s]), "peak": str(df.index[p]), "yarm_peak_m": round(float(lv), 3)} for s, p, lv in storms]}
     for k, (ok, fl, pok, pfl) in totals.items():
         print(f"{k:>17}: flooded sites protected in time {int(ok)}/{int(fl)} ({ok / max(fl, 1):.0%}), "
@@ -99,10 +99,12 @@ def run(data, n_crews, protected_weight, max_storms=None):
     winters = pd.Series([df.index[p] for _, p, _ in storms]).map(lambda d: f"{d.year - (d.month < 7)}/{str(d.year - (d.month < 7) + 1)[2:]}")
     result["storms_per_winter"] = winters.value_counts().sort_index().to_dict()
     print(f"Storms replayed: {len(storms)} " + str(result["storms_per_winter"]))
-    by_crews = json.loads((OUT / "metrics.json").read_text()).get("evaluation_by_crews", {}) if (OUT / "metrics.json").exists() else {}
-    by_crews[str(n_crews)] = {k: result[k] for k in ("floodcrew", "current_practice")}
-    update_metrics("evaluation_by_crews", dict(sorted(by_crews.items(), key=lambda kv: int(kv[0]))))
-    if n_crews == 3:   # the headline evaluation is the 3-crew run
+    # every run is kept: evaluation_runs[protected weight][crews]
+    runs = json.loads((OUT / "metrics.json").read_text()).get("evaluation_runs", {}) if (OUT / "metrics.json").exists() else {}
+    runs.setdefault(f"{protected_weight:.1f}", {})[str(n_crews)] = {k: result[k] for k in ("floodcrew", "current_practice")}
+    runs = {w: dict(sorted(v.items(), key=lambda kv: int(kv[0]))) for w, v in sorted(runs.items())}
+    update_metrics("evaluation_runs", runs)
+    if n_crews == 3 and protected_weight == 2.0:   # the headline evaluation: 3 crews, default protected weight
         update_metrics("evaluation", result)
 
 

@@ -22,7 +22,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, precision_s
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from .config import GAUGES, TRAIN_FRACTION
+from .config import GAUGES, PLANNER_MODEL, TRAIN_FRACTION
 from .features import FEATURES, add_soil_wetness, build
 from .synthetic import simulate
 
@@ -66,7 +66,7 @@ def main(data: str):
     OUT.mkdir(exist_ok=True)
     report = {"data": data, "split": str(split), "warn": warn,
               "warn_source": "simulated: 99.3rd percentile" if df.attrs.get("synthetic") else "official EA flood alert level (top of normal range)",
-              "gauges": {}}
+              "planner_model": PLANNER_MODEL, "gauges": {}}
     rows = []
     for g in GAUGES:
         gid = g["id"]
@@ -89,7 +89,7 @@ def main(data: str):
                 "r2": round(r2_score(truth, pred), 4),
                 # no hours above the warning level in the test period -> recall cannot be measured (None, shown as n/a)
                 "warning_precision": round(precision_score(actual_warn, alarm, zero_division=0), 3) if alarm.any() else None,
-                "warning_recall": round(recall_score(actual_warn, alarm, zero_division=0), 3) if actual_warn.any() else None,
+                "warning_recall": round(recall_score(actual_warn, alarm, zero_division=0), 3) if actual_warn.any() else "no warning events",
             }
             rows.append([g["name"], name, res[name]["mae_cm"], res[name]["r2"], res[name]["warning_precision"], res[name]["warning_recall"]])
         coefs = ridge[-1].coef_

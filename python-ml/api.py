@@ -9,7 +9,7 @@ from pathlib import Path
 import joblib
 from fastapi import FastAPI, Query
 
-from floodcrew.config import CREWS, GAUGES
+from floodcrew.config import CREWS, GAUGES, PLANNER_MODEL
 from floodcrew.features import build
 from floodcrew.plan import approvals, plan, site_risk
 from floodcrew.train import DEFAULT_DATA, OUT, load, warning_levels
@@ -27,8 +27,10 @@ def forecasts(at: int, extra_rain: float):
         X, _ = build(DF, g["id"], extra_rain=extra_rain)
         x = X.iloc[[min(at, len(X) - 1)]]
         m = MODELS[g["id"]]
-        out[g["id"]] = {"time": str(x.index[0]), "now": float(x["level_now"].iloc[0]), "pred": float(m["ridge"].predict(x)[0]),
-                        "pred_gbm": float(m["gbm"].predict(x)[0]), "sigma": m["sigma"], "warning_level": m["warn"]}
+        out[g["id"]] = {"time": str(x.index[0]), "now": float(x["level_now"].iloc[0]),
+                        "pred": float(m[PLANNER_MODEL].predict(x)[0]),   # the model the planner uses
+                        "pred_ridge": float(m["ridge"].predict(x)[0]), "pred_gbm": float(m["gbm"].predict(x)[0]),
+                        "model": PLANNER_MODEL, "sigma": m["sigma"], "warning_level": m["warn"]}
     return out
 
 
