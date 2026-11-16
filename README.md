@@ -2,11 +2,18 @@
 
 Decision support for sending council crews and gritters during floods, snow and black ice, with public alerts.
 
+## Live site
+Hosted on Vercel at **https://floodcrew.vercel.app** (deploys automatically from `main`).
+- Public page: https://floodcrew.vercel.app/landing-page/index.html
+- Officer app: https://floodcrew.vercel.app/web-app/index.html
+
+The old address, `python-ml-one.vercel.app`, redirects here.
+
 ## Folders
 | Folder | What it is |
 |---|---|
 | `web-app/` | Officer (staff) app: Monitor, Plan, Decide, Evaluate. Open `index.html` in a browser. |
-| `landing-page/` | Public page: globe, live alerts, safer route, postcode sign-up. Open `index.html`. |
+| `landing-page/` | Public page: globe, live alerts, safer route, live map, TS postcode lookup and sign-up. Open `index.html`. |
 | `python-ml/` | Python models with real Environment Agency data option (see its README). |
 | `demo/` | Earlier clickable demo (officer + crew views). |
 | `docs/` | Proposal and write-up (PDF, Word, HTML) and the script that makes them. |
@@ -29,6 +36,7 @@ cd landing-page
 python build.py
 ```
 - `land.json` – world map data for the globe (filled into `@@LAND@@` by build.py)
+- The live map uses a copy of `var BASE` from `web-app/ui.html`; if you redraw the map, paste it into `src.html` too
 
 ## Run the Python project
 ```
