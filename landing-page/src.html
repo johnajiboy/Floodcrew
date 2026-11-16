@@ -184,8 +184,8 @@ footer a{color:#5B45A0}
 <div class="wrap" style="padding-top:0;padding-bottom:32px">
 <section class="card mapc" id="livemap" aria-labelledby="mapH">
 <div class="maphd"><div><h2 id="mapH" style="font-size:22px">Live map</h2><div class="sub">Public hazards · Tees Valley</div></div>
-<div class="chips" role="group" aria-label="Map layers"><button type="button" aria-pressed="true" data-l="flood" style="--c:#2F7FD0"><i></i>Flooded</button><button type="button" aria-pressed="true" data-l="icy" style="--c:#7CC4F5"><i></i>Icy</button><button type="button" aria-pressed="true" data-l="grit" style="--c:#2E9E62"><i></i>Gritted</button><button type="button" aria-pressed="true" data-l="closed" style="--c:#D93A3A"><i></i>Closed</button></div></div>
-<div class="mapbox"><div class="mapw" id="mapw"><svg id="pmap" viewBox="40 130 880 580" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Street map of flooded, icy, gritted and closed roads"></svg></div><div class="rcard" id="rcard" aria-live="polite" hidden></div></div>
+<div class="chips" role="group" aria-label="Map layers"><button type="button" aria-pressed="true" data-l="flood" style="--c:#2F7FD0"><i></i>Flooded</button><button type="button" aria-pressed="true" data-l="icy" style="--c:#7CC4F5"><i></i>Icy</button><button type="button" aria-pressed="true" data-l="grit" style="--c:#2E9E62"><i></i>Gritted</button><button type="button" aria-pressed="true" data-l="nogrit" style="--c:#E8A317"><i></i>Not gritted</button><button type="button" aria-pressed="true" data-l="closed" style="--c:#D93A3A"><i></i>Closed</button></div></div>
+<div class="mapbox"><div class="mapw" id="mapw"><svg id="pmap" viewBox="40 130 880 580" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Street map of flooded, icy, gritted, not gritted and closed roads"></svg></div><div class="rcard" id="rcard" aria-live="polite" hidden></div></div>
 <div class="minfo" id="minfo" aria-live="polite">Tap a hazard for details.</div>
 </section>
 </div>
@@ -275,6 +275,14 @@ var HAZ={flood:[{n:'Yarm High Street',x:200,y:522,rx:36,ry:24},{n:'Eaglescliffe 
   {n:'Junction Road',d:'M418 160 L470 166'},{n:'Station Road',d:'M445 140 L440 198'},
   {n:'Stillington Road',d:'M60 160 C90 165 120 170 150 168'},{n:'Wynyard Road',d:'M470 140 C485 150 500 158 520 162'},
   {n:'Cowpen Lane',d:'M590 150 L650 158'}],
+ nogrit:[ /* every road marked not gritted in the sample list; display only, routing uses the icy zones */
+  {n:'Linthorpe Road',d:'M770 250 C774 265 778 280 782 300'},{n:'Port Clarence Road',d:'M775 152 L815 146'},
+  {n:'Longlands Road',d:'M745 370 L800 380'},{n:'Acklam Road',d:'M715 318 C718 345 720 370 722 395'},
+  {n:'Fabian Road',d:'M855 425 L900 432'},{n:'Stokesley Road',d:'M845 470 C848 500 850 530 852 560'},
+  {n:'Hemlington Lane',d:'M720 590 C750 600 780 605 810 600'},{n:'Durham Lane',d:'M300 480 C310 500 315 520 318 545'},
+  {n:'Ingleby Way (hill)',d:'M420 555 C450 546 470 540 490 535'},{n:'Bishopton Road',d:'M320 238 L392 242'},
+  {n:'Harrowgate Lane',d:'M190 235 C210 245 230 250 255 252'},{n:'Front Street',d:'M95 178 L110 205'},
+  {n:'Wolviston Road',d:'M500 175 L540 182'},{n:'Marsh House Avenue',d:'M600 172 L645 176'}],
  closed:[{n:'Yarm riverside path',d:'M160 642 C170 592 132 562 180 536'},{n:'Riverside Road, Stockton',d:'M428 304 C466 296 480 312 508 292'}]};
 var ROADS=[{n:'A19',t:2,d:'M610 760 C615 650 625 560 615 480 C605 420 590 360 575 300 C560 240 552 190 540 100'},{n:'A66',t:2,d:'M0 215 C150 215 300 212 420 210 C520 208 600 198 700 188 C800 178 880 170 1000 160'},
  {n:'A135',t:1,d:A135},{n:'A1032',t:1,d:'M480 320 C540 318 600 322 650 318 C720 312 800 300 920 292'},{n:'A174',t:1,d:'M560 520 C620 500 660 482 720 468 C800 450 860 445 1000 440'},{n:'A67',t:1,d:'M40 600 C120 590 170 575 210 560'},
@@ -426,17 +434,18 @@ document.getElementById('gritForm').onsubmit=function(e){e.preventDefault();var 
  out.innerHTML=hits.map(function(r){return '<div class="res"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><b>'+r.n+'</b><span class="gpill" style="background:'+(r.ok?'#DCF3E6;color:#14532D':'#FBE8D6;color:#8A3A0E')+'">'+(r.ok?'Gritted today':'Not gritted today')+'</span></div><span style="font-size:13px;color:#6B57A8">'+r.a+' · '+r.pc+'</span><br>Last gritted: <b>'+r.last+'</b><br>Next run: <b>'+r.next+'</b></div>';}).join('');};
 
 /* ---------- live map (public layers only) ---------- */
-var pm=document.getElementById('pmap'),HZL=PUB.HAZ,KIND={flood:'Flooded',icy:'Icy',grit:'Gritted',closed:'Closed'};
+var pm=document.getElementById('pmap'),HZL=PUB.HAZ,KIND={flood:'Flooded',icy:'Icy',grit:'Gritted',nogrit:'Not gritted',closed:'Closed'};
 function dn(h,k){return ' data-n="'+h.n+'" data-k="'+KIND[k]+'"';}
 function hitLine(h,k){return '<path d="'+h.d+'" stroke="transparent" stroke-width="18" fill="none"'+dn(h,k)+'><title>'+h.n+' · '+KIND[k]+'</title></path>';}
 pm.innerHTML=BASE+
+ '<g data-l="nogrit">'+HZL.nogrit.map(function(h){return '<path d="'+h.d+'" stroke="#E8A317" stroke-width="4.5" stroke-linecap="round" fill="none" opacity=".95"/>'+hitLine(h,'nogrit');}).join('')+'</g>'+
  '<g data-l="grit">'+HZL.grit.map(function(h){return '<path d="'+h.d+'" stroke="#2E9E62" stroke-width="4.5" stroke-linecap="round" fill="none" opacity=".9"/>'+hitLine(h,'grit');}).join('')+'</g>'+
  '<g data-l="flood">'+HZL.flood.map(function(h){return '<ellipse cx="'+h.x+'" cy="'+h.y+'" rx="'+h.rx+'" ry="'+h.ry+'" fill="#4D9BE6" fill-opacity=".4" stroke="#2F7FD0" stroke-width="1.5" stroke-dasharray="5 4"'+dn(h,'flood')+'><title>'+h.n+' · Flooded</title></ellipse>';}).join('')+'</g>'+
  '<g data-l="icy">'+HZL.icy.map(function(h){return '<circle cx="'+h.x+'" cy="'+h.y+'" r="'+h.r+'" fill="#BFE3FF" fill-opacity=".6" stroke="#7CC4F5" stroke-width="1.5" stroke-dasharray="3 3"'+dn(h,'icy')+'><title>'+h.n+' · Icy</title></circle>';}).join('')+'</g>'+
  '<g data-l="closed">'+HZL.closed.map(function(h){return '<path d="'+h.d+'" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none"/><path d="'+h.d+'" stroke="#D93A3A" stroke-width="4" stroke-dasharray="7 5" fill="none"/>'+hitLine(h,'closed');}).join('')+'</g>'+
  '<g id="pmRoute"></g>';
 document.querySelectorAll('.chips button').forEach(function(b){b.onclick=function(){var on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);var g=pm.querySelector('g[data-l="'+b.dataset.l+'"]');if(on)g.removeAttribute('display');else g.setAttribute('display','none');};});
-pm.addEventListener('click',function(e){var t=e.target.closest('[data-n]');var gr=t&&t.dataset.k==='Gritted'&&GR.filter(function(r){return r.n===t.dataset.n;})[0];
+pm.addEventListener('click',function(e){var t=e.target.closest('[data-n]');var gr=t&&/ritted$/.test(t.dataset.k)&&GR.filter(function(r){return r.n===t.dataset.n;})[0];
  document.getElementById('minfo').innerHTML=t?'<b style="color:#2A1F52">'+t.dataset.n+'</b> · '+t.dataset.k+(gr?' · last '+gr.last.toLowerCase()+', next '+gr.next.toLowerCase():''):'Tap a hazard for details.';});
 function centreMap(x){var w=document.getElementById('mapw');w.scrollLeft=(x-40)/880*pm.clientWidth-w.clientWidth/2;}
 requestAnimationFrame(function(){centreMap(470);});
