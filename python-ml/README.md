@@ -53,7 +53,7 @@ Files: `data/tees_hourly.csv` (columns: time, broken, lowmoor, yarm, stockton, r
 and `data/middlesbrough_weather.csv`.
 
 Notes:
-- Warning levels are estimated as the level exceeded 0.7% of the time. If you know the official EA thresholds for each gauge, use those instead.
+- **Warning levels are the official EA flood alert levels** ("top of normal range: low-lying land flooding possible, one or more flood alerts may be issued"), from the flood-monitoring API (`typicalRangeHigh`) and gov.uk Check for Flooding: Broken Scar 2.50 m, Low Moor 4.50 m, Yarm 1.80 m, Stockton 3.20 m. They are set as `ea_alert` in `config.py`. The EA's "property flooding possible" levels (3.10, 6.50, 5.37 and 3.70 m) are kept as `ea_property` for reference; none was reached in 2023–2026, so they cannot be used to train or test warnings. Simulated data keeps its own levels (the level exceeded 0.7% of the time).
 - Stockton sits above the Tees Barrage, which holds the river level steady, so it barely responds to rain (about 6 cm standard deviation). Its forecasts and warnings are weak for that reason, not because of missing data.
 - `rain_fc_6h` uses the rain that actually fell, with about ±40% random error to mimic a forecast. In live use, replace it with a real rainfall forecast (for example Open-Meteo).
 - **Road temperature is estimated**, not measured: it follows the real air temperature with a lag, plus each route's offset and the effect of clear skies at night and in daytime sun (`estimate_road` in `ice.py`). The 6-hour air temperature and cloud forecasts are the observed values plus noise. If the council can share road sensor temperatures, use them as the target instead.
@@ -63,15 +63,18 @@ Hydrology data service, Open Government Licence. Weather data by Open-Meteo.com 
 
 ## 4. Results on real data (test period 27 Nov 2025 to 16 Nov 2026)
 
-| Gauge | MAE ridge | MAE boosting | MAE persistence | Warning recall (ridge) | Warning recall (persistence) |
-|---|---|---|---|---|---|
-| Broken Scar | 3.46 cm | 3.33 cm | 3.55 cm | 35% | 47% |
-| Low Moor | 6.40 cm | 2.15 cm | 7.34 cm | 42% | 45% |
-| Yarm | 3.63 cm | 2.97 cm | 3.84 cm | 69% | 54% |
-| Stockton | 2.14 cm | 1.95 cm | 1.94 cm | 16% | 0% |
+| Gauge | EA alert level | Hours above it (test) | MAE ridge | MAE boosting | MAE persistence | Warning recall ridge | Warning recall persistence |
+|---|---|---|---|---|---|---|---|
+| Broken Scar | 2.50 m | 0 | 3.46 cm | 3.33 cm | 3.55 cm | n/a | n/a |
+| Low Moor | 4.50 m | 4 | 6.40 cm | 2.15 cm | 7.34 cm | 75% | 0% |
+| Yarm | 1.80 m | 47 | 3.63 cm | 2.97 cm | 3.84 cm | 72% | 53% |
+| Stockton | 3.20 m | 0 | 2.14 cm | 1.95 cm | 1.94 cm | n/a | n/a |
 
-Crew replay (4 test-period storms, 3 crews): FloodCrew covered protected sites 3/4 in time (current practice 1/4)
-and flooded sites overall 4/11 (current practice 7/11).
+n/a = the river never reached the alert level in the test period, so recall cannot be measured.
+
+Crew replay (4 test-period storms, 3 crews): FloodCrew covered protected sites 4/4 in time (current practice 0/4)
+and flooded sites overall 6/9 (current practice 5/9). With the official levels only the Yarm sites flooded in these
+storms, so the protected site is the Yarm care home each time.
 Snow & ice (2 gritters, last 25% of winter 2025/26): ice events gritted in time 9/17 = 53% (current practice 6/17 = 35%),
 with 36 gritting runs instead of 52.
 

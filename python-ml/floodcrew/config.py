@@ -7,11 +7,15 @@ HORIZON_H = 6          # forecast horizon in hours
 TRAIN_FRACTION = 0.75  # time-based split: first 75% train, last 25% test
 
 GAUGES = [
-    # id, display name, EA station reference, synthetic settings
-    {"id": "broken",   "name": "Broken Scar", "ea_station": "F3501", "base": 0.55, "gain": 0.050, "lag": 3,  "k": 6},
-    {"id": "lowmoor",  "name": "Low Moor",    "ea_station": "F3606", "base": 0.70, "gain": 0.054, "lag": 6,  "k": 8},
-    {"id": "yarm",     "name": "Yarm",        "ea_station": "L3602", "base": 0.85, "gain": 0.058, "lag": 9,  "k": 10},
-    {"id": "stockton", "name": "Stockton",    "ea_station": "L3907", "base": 1.10, "gain": 0.050, "lag": 11, "k": 11},
+    # id, display name, EA station reference, official EA levels (m), synthetic settings
+    # ea_alert:    "Top of normal range. Low-lying land flooding possible above this level. One or more flood alerts may
+    #              be issued." = stageScale.typicalRangeHigh in the EA flood-monitoring API. Used as the warning level.
+    # ea_property: "Property flooding is possible above this level" (gov.uk Check for Flooding). Reference only.
+    # Source: check-for-flooding.service.gov.uk/station/<RLOIid> and the flood-monitoring API, checked 2026-11-16.
+    {"id": "broken",   "name": "Broken Scar", "ea_station": "F3501", "ea_alert": 2.50, "ea_property": 3.10, "base": 0.55, "gain": 0.050, "lag": 3,  "k": 6},
+    {"id": "lowmoor",  "name": "Low Moor",    "ea_station": "F3606", "ea_alert": 4.50, "ea_property": 6.50, "base": 0.70, "gain": 0.054, "lag": 6,  "k": 8},
+    {"id": "yarm",     "name": "Yarm",        "ea_station": "L3602", "ea_alert": 1.80, "ea_property": 5.37, "base": 0.85, "gain": 0.058, "lag": 9,  "k": 10},
+    {"id": "stockton", "name": "Stockton",    "ea_station": "L3907", "ea_alert": 3.20, "ea_property": 3.70, "base": 1.10, "gain": 0.050, "lag": 11, "k": 11},
 ]
 
 # Rainfall: EA rain gauges within this radius are averaged into one catchment series
