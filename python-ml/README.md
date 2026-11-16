@@ -73,15 +73,16 @@ Hydrology data service, Open Government Licence. Weather data by Open-Meteo.com 
 Broken Scar and Stockton only reach their alert levels briefly (15 and 10 hours in three years) and no model
 caught those hours.
 
-Crew replay (all 18 test-period storms: 7 in 2023/24, 6 in 2024/25, 5 in 2025/26; 3 crews): FloodCrew covered
-protected sites 15/17 in time (current practice 0/17) and flooded sites overall 25/46 (current practice 20/46).
+Crew replay (all 18 test-period storms: 7 in 2023/24, 6 in 2024/25, 5 in 2025/26). Site flood levels are the
+gauge's EA alert level plus the site offset in `config.py`; no site floods at the alert level itself (care home
++0.20 m, school +0.35 m, hospital road +0.50 m), so current practice, which dispatches at the alert level, has time to act.
 Use `--max-storms N` to replay only the first N storms.
 
 | Crews | Protected sites covered: FloodCrew | Current practice | All flooded sites covered: FloodCrew | Current practice |
 |---|---|---|---|---|
-| 2 | 15/17 (88%) | 0/17 (0%) | 24/46 (52%) | 16/46 (35%) |
-| 3 | 15/17 (88%) | 0/17 (0%) | 25/46 (54%) | 20/46 (43%) |
-| 5 | 15/17 (88%) | 0/17 (0%) | 31/46 (67%) | 21/46 (46%) |
+| 2 | 11/13 (85%) | 9/13 (69%) | 21/42 (50%) | 25/42 (60%) |
+| 3 | 11/13 (85%) | 10/13 (77%) | 21/42 (50%) | 30/42 (71%) |
+| 5 | 11/13 (85%) | 10/13 (77%) | 27/42 (64%) | 31/42 (74%) |
 
 Each `evaluate --crews N` run is stored under `evaluation_by_crews` in `metrics.json`; `evaluation` is the 3-crew run.
 Snow & ice (2 gritters, last 25% of winter 2025/26): ice events gritted in time 9/17 = 53% (current practice 6/17 = 35%),

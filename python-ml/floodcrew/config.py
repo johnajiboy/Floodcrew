@@ -23,12 +23,12 @@ RAIN_SEARCH = {"lat": 54.52, "long": -1.45, "dist_km": 25}
 
 # Sites the officer protects. offset = metres above the gauge warning level at which the site floods.
 SITES = [
-    {"id": "care",     "name": "Yarm care home",         "gauge": "yarm",     "offset": 0.00, "homes": 40,  "type": "Care home",      "protected": True,  "x": 236, "y": 546},
+    {"id": "care",     "name": "Yarm care home",         "gauge": "yarm",     "offset": 0.20, "homes": 40,  "type": "Care home",      "protected": True,  "x": 236, "y": 546},
     {"id": "yarmhs",   "name": "Yarm High Street",       "gauge": "yarm",     "offset": 0.25, "homes": 140, "type": "Homes & shops",  "protected": False, "x": 205, "y": 505},
     {"id": "eagle",    "name": "Eaglescliffe riverside", "gauge": "yarm",     "offset": 0.45, "homes": 60,  "type": "Homes",          "protected": False, "x": 290, "y": 440},
     {"id": "stockrs",  "name": "Stockton riverside",     "gauge": "stockton", "offset": 0.10, "homes": 210, "type": "Homes",          "protected": False, "x": 410, "y": 330},
-    {"id": "school",   "name": "Thornaby school",        "gauge": "stockton", "offset": 0.15, "homes": 0,   "type": "School",         "protected": True,  "x": 520, "y": 236},
-    {"id": "hosp",     "name": "Hospital access road",   "gauge": "stockton", "offset": 0.30, "homes": 0,   "type": "Hospital route", "protected": True,  "x": 700, "y": 430},
+    {"id": "school",   "name": "Thornaby school",        "gauge": "stockton", "offset": 0.35, "homes": 0,   "type": "School",         "protected": True,  "x": 520, "y": 236},
+    {"id": "hosp",     "name": "Hospital access road",   "gauge": "stockton", "offset": 0.50, "homes": 0,   "type": "Hospital route", "protected": True,  "x": 700, "y": 430},
     {"id": "lowmoorf", "name": "Low Moor farms",         "gauge": "lowmoor",  "offset": 0.20, "homes": 12,  "type": "Farms",          "protected": False, "x": 110, "y": 640},
 ]
 DEPOT = {"id": "depot", "name": "Middlesbrough depot", "x": 775, "y": 350}

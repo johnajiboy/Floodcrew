@@ -263,16 +263,16 @@
       }
     ],
     "floodcrew": {
-      "sites_protected": 25,
-      "sites_flooded": 46,
-      "protected_sites_covered": 15,
-      "protected_sites_flooded": 17
+      "sites_protected": 21,
+      "sites_flooded": 42,
+      "protected_sites_covered": 11,
+      "protected_sites_flooded": 13
     },
     "current_practice": {
-      "sites_protected": 20,
-      "sites_flooded": 46,
-      "protected_sites_covered": 0,
-      "protected_sites_flooded": 17
+      "sites_protected": 30,
+      "sites_flooded": 42,
+      "protected_sites_covered": 10,
+      "protected_sites_flooded": 13
     },
     "storms_per_winter": {
       "2023/24": 7,
@@ -311,44 +311,44 @@
   "evaluation_by_crews": {
     "2": {
       "floodcrew": {
-        "sites_protected": 24,
-        "sites_flooded": 46,
-        "protected_sites_covered": 15,
-        "protected_sites_flooded": 17
+        "sites_protected": 21,
+        "sites_flooded": 42,
+        "protected_sites_covered": 11,
+        "protected_sites_flooded": 13
       },
       "current_practice": {
-        "sites_protected": 16,
-        "sites_flooded": 46,
-        "protected_sites_covered": 0,
-        "protected_sites_flooded": 17
+        "sites_protected": 25,
+        "sites_flooded": 42,
+        "protected_sites_covered": 9,
+        "protected_sites_flooded": 13
       }
     },
     "3": {
       "floodcrew": {
-        "sites_protected": 25,
-        "sites_flooded": 46,
-        "protected_sites_covered": 15,
-        "protected_sites_flooded": 17
+        "sites_protected": 21,
+        "sites_flooded": 42,
+        "protected_sites_covered": 11,
+        "protected_sites_flooded": 13
       },
       "current_practice": {
-        "sites_protected": 20,
-        "sites_flooded": 46,
-        "protected_sites_covered": 0,
-        "protected_sites_flooded": 17
+        "sites_protected": 30,
+        "sites_flooded": 42,
+        "protected_sites_covered": 10,
+        "protected_sites_flooded": 13
       }
     },
     "5": {
       "floodcrew": {
-        "sites_protected": 31,
-        "sites_flooded": 46,
-        "protected_sites_covered": 15,
-        "protected_sites_flooded": 17
+        "sites_protected": 27,
+        "sites_flooded": 42,
+        "protected_sites_covered": 11,
+        "protected_sites_flooded": 13
       },
       "current_practice": {
-        "sites_protected": 21,
-        "sites_flooded": 46,
-        "protected_sites_covered": 0,
-        "protected_sites_flooded": 17
+        "sites_protected": 31,
+        "sites_flooded": 42,
+        "protected_sites_covered": 10,
+        "protected_sites_flooded": 13
       }
     }
   }
