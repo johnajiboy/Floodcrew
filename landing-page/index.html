@@ -203,7 +203,7 @@ footer a{color:#5B45A0}
 <div id="repMsg" aria-live="polite"></div>
 </section>
 <section class="card panel" id="grit" aria-labelledby="gritH">
-<div><h2 id="gritH" style="font-size:22px">Is my road gritted?</h2><div class="sub">Sample data for 6 local roads.</div></div>
+<div><h2 id="gritH" style="font-size:22px">Is my road gritted?</h2><div class="sub">Sample data for 13 local roads.</div></div>
 <form id="gritForm" novalidate>
 <label>Postcode or street<input id="gritQ" placeholder="e.g. TS15 or Durham Road" autocomplete="off"></label>
 <button class="btn pri" type="submit" style="height:48px;justify-content:center;background:#3E2F6E;color:#fff">Check</button>
@@ -377,7 +377,14 @@ var GR=[{n:'Yarm High Street',a:'Yarm',pc:'TS15',last:'Today 05:40',next:'Today 
 {n:'Hardwick Road (hospital route)',a:'Stockton',pc:'TS19',last:'Today 13:15',next:'Today 21:00',ok:1},
 {n:'Durham Road',a:'Stockton',pc:'TS18',last:'Today 06:05',next:'Today 18:30',ok:1},
 {n:'Yarm Road',a:'Eaglescliffe',pc:'TS16',last:'Today 05:55',next:'Today 18:15',ok:1},
-{n:'Linthorpe Road',a:'Middlesbrough',pc:'TS1',last:'Yesterday 20:30',next:'Today 17:00',ok:0}];
+{n:'Linthorpe Road',a:'Middlesbrough',pc:'TS1',last:'Yesterday 20:30',next:'Today 17:00',ok:0},
+{n:'Riverside Park Road',a:'Middlehaven',pc:'TS2',last:'Today 05:20',next:'Today 18:00',ok:1},
+{n:'Ormesby Road',a:'North Ormesby',pc:'TS3',last:'Today 06:15',next:'Today 18:30',ok:1},
+{n:'Marton Road (hospital route)',a:'James Cook',pc:'TS4',last:'Today 13:05',next:'Today 20:30',ok:1},
+{n:'Acklam Road',a:'Acklam',pc:'TS5',last:'Yesterday 21:10',next:'Today 16:45',ok:0},
+{n:'Normanby Road',a:'Normanby',pc:'TS6',last:'Today 05:50',next:'Today 18:15',ok:1},
+{n:'Stokesley Road',a:'Nunthorpe',pc:'TS7',last:'Yesterday 19:40',next:'Today 17:15',ok:0},
+{n:'Stainton Way',a:'Coulby Newham',pc:'TS8',last:'Today 06:30',next:'Today 19:00',ok:1}];
 document.getElementById('gritForm').onsubmit=function(e){e.preventDefault();var q=document.getElementById('gritQ').value.trim(),out=document.getElementById('gritRes'),hits,w;
  if(!q){out.innerHTML='<p class="hint" style="margin:0;color:#A1340C">Enter a postcode or street.</p>';return;}
  w=PUB.resolve(q);if(w.err==='outside'){out.innerHTML='<p class="hint" style="margin:0;color:#A1340C">'+PUB.OUT+'</p>';return;}
