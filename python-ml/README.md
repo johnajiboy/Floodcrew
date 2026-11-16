@@ -76,6 +76,14 @@ caught those hours.
 Crew replay (all 18 test-period storms: 7 in 2023/24, 6 in 2024/25, 5 in 2025/26; 3 crews): FloodCrew covered
 protected sites 15/17 in time (current practice 0/17) and flooded sites overall 25/46 (current practice 20/46).
 Use `--max-storms N` to replay only the first N storms.
+
+| Crews | Protected sites covered: FloodCrew | Current practice | All flooded sites covered: FloodCrew | Current practice |
+|---|---|---|---|---|
+| 2 | 15/17 (88%) | 0/17 (0%) | 24/46 (52%) | 16/46 (35%) |
+| 3 | 15/17 (88%) | 0/17 (0%) | 25/46 (54%) | 20/46 (43%) |
+| 5 | 15/17 (88%) | 0/17 (0%) | 31/46 (67%) | 21/46 (46%) |
+
+Each `evaluate --crews N` run is stored under `evaluation_by_crews` in `metrics.json`; `evaluation` is the 3-crew run.
 Snow & ice (2 gritters, last 25% of winter 2025/26): ice events gritted in time 9/17 = 53% (current practice 6/17 = 35%),
 with 36 gritting runs instead of 52.
 

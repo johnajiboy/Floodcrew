@@ -307,5 +307,49 @@
       "runs": 52,
       "gritted_in_time_pct": 35.3
     }
+  },
+  "evaluation_by_crews": {
+    "2": {
+      "floodcrew": {
+        "sites_protected": 24,
+        "sites_flooded": 46,
+        "protected_sites_covered": 15,
+        "protected_sites_flooded": 17
+      },
+      "current_practice": {
+        "sites_protected": 16,
+        "sites_flooded": 46,
+        "protected_sites_covered": 0,
+        "protected_sites_flooded": 17
+      }
+    },
+    "3": {
+      "floodcrew": {
+        "sites_protected": 25,
+        "sites_flooded": 46,
+        "protected_sites_covered": 15,
+        "protected_sites_flooded": 17
+      },
+      "current_practice": {
+        "sites_protected": 20,
+        "sites_flooded": 46,
+        "protected_sites_covered": 0,
+        "protected_sites_flooded": 17
+      }
+    },
+    "5": {
+      "floodcrew": {
+        "sites_protected": 31,
+        "sites_flooded": 46,
+        "protected_sites_covered": 15,
+        "protected_sites_flooded": 17
+      },
+      "current_practice": {
+        "sites_protected": 21,
+        "sites_flooded": 46,
+        "protected_sites_covered": 0,
+        "protected_sites_flooded": 17
+      }
+    }
   }
 }

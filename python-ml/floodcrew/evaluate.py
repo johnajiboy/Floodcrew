@@ -7,6 +7,7 @@ Current practice = wait for the official warning (gauge reaches its warning leve
 to that river's sites, most homes first. A site counts as protected if a crew is on site at the moment it floods.
 """
 import argparse
+import json
 from math import ceil
 
 import joblib
@@ -98,7 +99,11 @@ def run(data, n_crews, protected_weight, max_storms=None):
     winters = pd.Series([df.index[p] for _, p, _ in storms]).map(lambda d: f"{d.year - (d.month < 7)}/{str(d.year - (d.month < 7) + 1)[2:]}")
     result["storms_per_winter"] = winters.value_counts().sort_index().to_dict()
     print(f"Storms replayed: {len(storms)} " + str(result["storms_per_winter"]))
-    update_metrics("evaluation", result)
+    by_crews = json.loads((OUT / "metrics.json").read_text()).get("evaluation_by_crews", {}) if (OUT / "metrics.json").exists() else {}
+    by_crews[str(n_crews)] = {k: result[k] for k in ("floodcrew", "current_practice")}
+    update_metrics("evaluation_by_crews", dict(sorted(by_crews.items(), key=lambda kv: int(kv[0]))))
+    if n_crews == 3:   # the headline evaluation is the 3-crew run
+        update_metrics("evaluation", result)
 
 
 if __name__ == "__main__":
