@@ -28,7 +28,7 @@ pip install -r requirements.txt
 ```bash
 python -m floodcrew.fetch_ea                 # download EA river levels + rainfall (2015-01-01 to today)
 python -m floodcrew.train                    # train and test the 6-hour forecasts
-python -m floodcrew.evaluate --crews 3       # replay real test-period storms: FloodCrew vs current practice
+python -m floodcrew.evaluate --crews 3       # replay every test-period storm: FloodCrew vs current practice
 python -m floodcrew.ice --gritters 2         # snow & ice on real Middlesbrough weather
 uvicorn api:app --reload                     # then open http://127.0.0.1:8000/docs
 ```
@@ -73,9 +73,9 @@ Hydrology data service, Open Government Licence. Weather data by Open-Meteo.com 
 Broken Scar and Stockton only reach their alert levels briefly (15 and 10 hours in three years) and no model
 caught those hours.
 
-Crew replay (first 6 test-period storms, Dec 2023 to Apr 2024, 3 crews): FloodCrew covered protected sites 5/6 in
-time (current practice 0/6) and flooded sites overall 8/16 (current practice 6/16). `evaluate` replays at most 6
-storms (`find_storms(n=6)`).
+Crew replay (all 18 test-period storms: 7 in 2023/24, 6 in 2024/25, 5 in 2025/26; 3 crews): FloodCrew covered
+protected sites 15/17 in time (current practice 0/17) and flooded sites overall 25/46 (current practice 20/46).
+Use `--max-storms N` to replay only the first N storms.
 Snow & ice (2 gritters, last 25% of winter 2025/26): ice events gritted in time 9/17 = 53% (current practice 6/17 = 35%),
 with 36 gritting runs instead of 52.
 

@@ -200,19 +200,84 @@
         "start": "2024-04-08 23:00:00+00:00",
         "peak": "2024-04-10 05:00:00+00:00",
         "yarm_peak_m": 1.775
+      },
+      {
+        "start": "2024-05-22 13:00:00+00:00",
+        "peak": "2024-05-23 16:00:00+00:00",
+        "yarm_peak_m": 2.166
+      },
+      {
+        "start": "2024-09-26 01:00:00+00:00",
+        "peak": "2024-09-27 01:00:00+00:00",
+        "yarm_peak_m": 2.728
+      },
+      {
+        "start": "2024-10-08 23:00:00+00:00",
+        "peak": "2024-10-09 21:00:00+00:00",
+        "yarm_peak_m": 2.293
+      },
+      {
+        "start": "2024-10-16 16:00:00+00:00",
+        "peak": "2024-10-17 16:00:00+00:00",
+        "yarm_peak_m": 2.53
+      },
+      {
+        "start": "2024-11-23 15:00:00+00:00",
+        "peak": "2024-11-24 11:00:00+00:00",
+        "yarm_peak_m": 1.876
+      },
+      {
+        "start": "2024-12-07 19:00:00+00:00",
+        "peak": "2024-12-08 15:00:00+00:00",
+        "yarm_peak_m": 1.783
+      },
+      {
+        "start": "2024-12-31 12:00:00+00:00",
+        "peak": "2025-01-02 00:00:00+00:00",
+        "yarm_peak_m": 2.551
+      },
+      {
+        "start": "2025-11-12 19:00:00+00:00",
+        "peak": "2025-11-14 00:00:00+00:00",
+        "yarm_peak_m": 3.237
+      },
+      {
+        "start": "2025-12-09 06:00:00+00:00",
+        "peak": "2025-12-10 03:00:00+00:00",
+        "yarm_peak_m": 1.853
+      },
+      {
+        "start": "2026-01-22 10:00:00+00:00",
+        "peak": "2026-01-23 16:00:00+00:00",
+        "yarm_peak_m": 2.376
+      },
+      {
+        "start": "2026-02-11 04:00:00+00:00",
+        "peak": "2026-02-12 03:00:00+00:00",
+        "yarm_peak_m": 2.086
+      },
+      {
+        "start": "2026-03-12 09:00:00+00:00",
+        "peak": "2026-03-13 09:00:00+00:00",
+        "yarm_peak_m": 2.505
       }
     ],
     "floodcrew": {
-      "sites_protected": 8,
-      "sites_flooded": 16,
-      "protected_sites_covered": 5,
-      "protected_sites_flooded": 6
+      "sites_protected": 25,
+      "sites_flooded": 46,
+      "protected_sites_covered": 15,
+      "protected_sites_flooded": 17
     },
     "current_practice": {
-      "sites_protected": 6,
-      "sites_flooded": 16,
+      "sites_protected": 20,
+      "sites_flooded": 46,
       "protected_sites_covered": 0,
-      "protected_sites_flooded": 6
+      "protected_sites_flooded": 17
+    },
+    "storms_per_winter": {
+      "2023/24": 7,
+      "2024/25": 6,
+      "2025/26": 5
     }
   },
   "ice": {
