@@ -35,57 +35,70 @@ def find_storms(df, split, warn, n=None):
     return storms
 
 
+def replay(df, preds, models, warn, start, policy, n_crews, protected_weight):
+    """Replay one storm for 72 hours under one policy. Returns (protected_at, flooded_at, first_dispatch) as row indices."""
+    crews = [{"id": f"c{i}", "name": CREWS[i], "at": "depot", "busy_until": -1, "dest": None} for i in range(n_crews)]
+    protected_at, flooded_at, first_dispatch = {}, {}, None
+    for t in range(start, min(start + 72, len(df) - HORIZON_H)):
+        ts = df.index[t]
+        for c in crews:
+            if c["dest"] and t >= c["busy_until"]:
+                c["at"], c["dest"] = c["dest"], None
+        for s in SITES:
+            if s["id"] not in flooded_at and df[s["gauge"]].iloc[t] >= warn[s["gauge"]] + s["offset"]:
+                flooded_at[s["id"]] = t
+                # protected = a crew is already on site at the moment it floods
+                if any(c["at"] == s["id"] and not c["dest"] for c in crews):
+                    protected_at[s["id"]] = t
+        free = [c for c in crews if not c["dest"]]
+        if not free:
+            continue
+        if policy == "floodcrew":
+            fc = {gid: {"pred": float(preds[gid].get(ts, df[gid].iloc[t])), "sigma": models[gid]["sigma"]} for gid in models}
+            risks = site_risk(fc, warn, protected_weight)
+            p_now = {r["site"]: r["p"] for r in risks}
+            # crews standing at a site whose risk has passed (and that has not flooded) can be re-tasked
+            free = [c for c in free if c["at"] == "depot" or p_now.get(c["at"], 0) < 0.1 or c["at"] in flooded_at]
+            busy = [c for c in crews if c not in free]
+            covered = {}
+            for c in busy:
+                site = c["dest"] or c["at"]
+                covered[site] = covered.get(site, 0) + 1
+            for m in plan(risks, free, covered=covered):
+                if not m["standby"] and m["to"] != m["from"]:
+                    c = next(c for c in crews if c["name"] == m["crew"])
+                    c["dest"], c["busy_until"] = m["to"], t + max(1, ceil(m["minutes"] / 60))
+                    first_dispatch = t if first_dispatch is None else first_dispatch
+        else:
+            need = [s for s in SITES if df[s["gauge"]].iloc[t] >= warn[s["gauge"]]
+                    and not any(c["at"] == s["id"] or c["dest"] == s["id"] for c in crews)]
+            for s in sorted(need, key=lambda s: -(s["homes"] + (60 if s["protected"] else 0))):
+                free = [c for c in crews if not c["dest"]]
+                if not free:
+                    break
+                c = min(free, key=lambda c: travel_minutes(c["at"], s["id"]))
+                c["dest"], c["busy_until"] = s["id"], t + max(1, ceil(travel_minutes(c["at"], s["id"]) / 60))
+                first_dispatch = t if first_dispatch is None else first_dispatch
+    return protected_at, flooded_at, first_dispatch
+
+
+def planner_forecasts(df, models):
+    """Planner-model forecast of each gauge's level HORIZON_H hours ahead, indexed by the time it was made."""
+    feats = {g["id"]: build(df, g["id"])[0] for g in GAUGES}
+    return {gid: pd.Series(models[gid][PLANNER_MODEL].predict(feats[gid]), index=feats[gid].index) for gid in models}
+
+
 def run(data, n_crews, protected_weight, max_storms=None):
     df = load(data)
     split = df.index[int(len(df) * TRAIN_FRACTION)]
     warn = warning_levels(df)
     models = {g["id"]: joblib.load(OUT / f"{g['id']}.joblib") for g in GAUGES}
-    feats = {g["id"]: build(df, g["id"])[0] for g in GAUGES}
-    preds = {gid: pd.Series(models[gid][PLANNER_MODEL].predict(feats[gid]), index=feats[gid].index) for gid in models}
+    preds = planner_forecasts(df, models)
     totals = {"floodcrew": np.zeros(4), "current_practice": np.zeros(4)}
     storms = find_storms(df, split, warn, max_storms)
     for (start, peak, level) in storms:
         for policy in totals:
-            crews = [{"id": f"c{i}", "name": CREWS[i], "at": "depot", "busy_until": -1, "dest": None} for i in range(n_crews)]
-            protected_at, flooded_at = {}, {}
-            for t in range(start, min(start + 72, len(df) - HORIZON_H)):
-                ts = df.index[t]
-                for c in crews:
-                    if c["dest"] and t >= c["busy_until"]:
-                        c["at"], c["dest"] = c["dest"], None
-                for s in SITES:
-                    if s["id"] not in flooded_at and df[s["gauge"]].iloc[t] >= warn[s["gauge"]] + s["offset"]:
-                        flooded_at[s["id"]] = t
-                        # protected = a crew is already on site at the moment it floods
-                        if any(c["at"] == s["id"] and not c["dest"] for c in crews):
-                            protected_at[s["id"]] = t
-                free = [c for c in crews if not c["dest"]]
-                if not free:
-                    continue
-                if policy == "floodcrew":
-                    fc = {gid: {"pred": float(preds[gid].get(ts, df[gid].iloc[t])), "sigma": models[gid]["sigma"]} for gid in models}
-                    risks = site_risk(fc, warn, protected_weight)
-                    p_now = {r["site"]: r["p"] for r in risks}
-                    # crews standing at a site whose risk has passed (and that has not flooded) can be re-tasked
-                    free = [c for c in free if c["at"] == "depot" or p_now.get(c["at"], 0) < 0.1 or c["at"] in flooded_at]
-                    busy = [c for c in crews if c not in free]
-                    covered = {}
-                    for c in busy:
-                        site = c["dest"] or c["at"]
-                        covered[site] = covered.get(site, 0) + 1
-                    for m in plan(risks, free, covered=covered):
-                        if not m["standby"] and m["to"] != m["from"]:
-                            c = next(c for c in crews if c["name"] == m["crew"])
-                            c["dest"], c["busy_until"] = m["to"], t + max(1, ceil(m["minutes"] / 60))
-                else:
-                    need = [s for s in SITES if df[s["gauge"]].iloc[t] >= warn[s["gauge"]]
-                            and not any(c["at"] == s["id"] or c["dest"] == s["id"] for c in crews)]
-                    for s in sorted(need, key=lambda s: -(s["homes"] + (60 if s["protected"] else 0))):
-                        free = [c for c in crews if not c["dest"]]
-                        if not free:
-                            break
-                        c = min(free, key=lambda c: travel_minutes(c["at"], s["id"]))
-                        c["dest"], c["busy_until"] = s["id"], t + max(1, ceil(travel_minutes(c["at"], s["id"]) / 60))
+            protected_at, flooded_at, _ = replay(df, preds, models, warn, start, policy, n_crews, protected_weight)
             flooded = [s for s in SITES if s["id"] in flooded_at]
             ok = [s for s in flooded if s["id"] in protected_at]
             totals[policy] += [len(ok), len(flooded), sum(s["protected"] for s in ok), sum(s["protected"] for s in flooded)]

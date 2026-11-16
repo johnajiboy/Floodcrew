@@ -103,6 +103,19 @@ itself, and current practice dispatches at the alert level. Use `--max-storms N`
 
 Road temperature 6 h ahead: MAE 0.84 °C (persistence 1.92 °C), the same for every gritter count.
 
+### Figures
+
+`python -m floodcrew.figures` (after `train`) writes two figures to `docs/figures/`:
+
+- `yarm_storm.png`: the largest test-period storm at Yarm (peak 3.36 m, 28 Dec 2023): actual level, the boosting
+  6-hour forecast plotted at the hour it is for, the EA warning level, and the first crew dispatch (3 crews, weight 2.0).
+  FloodCrew sent its first crew at 17:00 on 27 Dec, 6 hours before current practice (23:00).
+- `importance.png`: permutation importance of the Yarm boosting model on the test period (rise in MAE when a feature
+  is shuffled). The upstream level at Low Moor matters most (+7.3 cm), then the current level (+3.6 cm).
+
+![Largest storm at Yarm](docs/figures/yarm_storm.png)
+![Permutation importance, Yarm](docs/figures/importance.png)
+
 ## 5. What to report
 
 - **Forecast accuracy:** MAE, R², and warning precision/recall for ridge, gradient boosting and persistence (`models/metrics.json`).
