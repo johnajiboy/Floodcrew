@@ -1,11 +1,18 @@
 """Snow & ice module: road-temperature forecast, gritting plan and evaluation.
 
-    python -m floodcrew.ice --gritters 2                 # simulated winters (works offline)
+    python -m floodcrew.ice --gritters 2                      # real Middlesbrough weather, winters 2024/25 and 2025/26
+    python -m floodcrew.ice --gritters 2 --weather synthetic  # simulated winters (works offline)
 
-Real data: replace `simulate()` with hourly weather (Open-Meteo: temperature_2m, dew_point_2m, cloud_cover,
-precipitation) and, if the council shares it, road sensor temperatures per route.
+Weather: hourly air temperature, dew point, precipitation and cloud cover for Middlesbrough from the Open-Meteo
+historical weather API (archive-api.open-meteo.com, free, no key), cached in data/middlesbrough_weather.csv.
+Road surface temperature is NOT measured: it is estimated from these inputs (see estimate_road). If the council
+shares road sensor temperatures per route, use them as `road` instead.
 """
 import argparse
+from pathlib import Path
+
+import pandas as pd
+import requests
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
@@ -23,6 +30,61 @@ ROUTES = [  # offset = how much colder/warmer the road runs than the air; impact
 ]
 DEPOT = {"x": 775, "y": 350}
 HZ, RUN_H, SALT_H = 6, 2, 10   # forecast horizon, hours per gritting run, hours salt stays effective
+MIDDLESBROUGH = {"latitude": 54.5742, "longitude": -1.2350}
+WINTERS = [("2024-11-01", "2025-03-31"), ("2025-11-01", "2026-03-31")]   # 151 days each
+WEATHER_CSV = Path(__file__).resolve().parent.parent / "data" / "middlesbrough_weather.csv"
+OPEN_METEO = "https://archive-api.open-meteo.com/v1/archive"
+
+
+def estimate_road(air, cloud, rng):
+    """Road surface temperature per route, ESTIMATED from air temperature and cloud cover (no road sensors).
+    The road follows the air with a lag, runs colder or warmer by the route's offset, cools under clear night skies
+    and warms in clear daytime sun, plus small local variation."""
+    road = {}
+    for rt in ROUTES:
+        v, R = air[0], np.zeros(len(air))
+        for i in range(len(air)):
+            hh = i % 24
+            night, day = hh >= 17 or hh <= 8, 10 <= hh <= 15
+            target = air[i] + rt["offset"] + (-2.2 * (1 - cloud[i]) if night else 0) + (2.2 * (1 - cloud[i]) if day else 0)
+            v = v + 0.35 * (target - v) + 0.15 * rng.standard_normal()
+            R[i] = v
+        road[rt["id"]] = R
+    return road
+
+
+def fetch_weather():
+    """Hourly Middlesbrough weather for each winter from Open-Meteo (times in GMT, so index % 24 = hour of day)."""
+    frames = []
+    for a, b in WINTERS:
+        r = requests.get(OPEN_METEO, params={**MIDDLESBROUGH, "start_date": a, "end_date": b, "timezone": "GMT",
+                                             "hourly": "temperature_2m,dew_point_2m,precipitation,cloud_cover"},
+                         headers={"User-Agent": "floodcrew-student-project"}, timeout=120)
+        r.raise_for_status()
+        h = r.json()["hourly"]
+        df = pd.DataFrame(h).rename(columns={"temperature_2m": "air", "dew_point_2m": "dew", "precipitation": "precip"})
+        df["cloud"] = df.pop("cloud_cover") / 100
+        df["winter"] = f"{a[:4]}/{b[2:4]}"
+        frames.append(df)
+    df = pd.concat(frames, ignore_index=True)
+    WEATHER_CSV.parent.mkdir(exist_ok=True)
+    df.to_csv(WEATHER_CSV, index=False)
+    return df
+
+
+def real(seed=11):
+    """Same structure as simulate(), but air, dew point, precipitation and cloud are real Open-Meteo observations."""
+    df = pd.read_csv(WEATHER_CSV) if WEATHER_CSV.exists() else fetch_weather()
+    df[["air", "dew", "precip", "cloud"]] = df[["air", "dew", "precip", "cloud"]].interpolate(limit_direction="both")
+    rng = np.random.default_rng(seed)
+    air, cloud, precip, dew = (df[c].to_numpy(float) for c in ("air", "cloud", "precip", "dew"))
+    H = len(df)
+    road = estimate_road(air, cloud, rng)
+    # forecast errors: the 6-hour air temperature and cloud forecasts are the observed values plus noise
+    # (a real forecast archive could replace this)
+    return {"H": H, "air": air, "cloud": cloud, "precip": precip, "dew": dew, "road": road,
+            "air_err": rng.standard_normal(H) * 1.0, "cloud_err": rng.standard_normal(H) * 0.15,
+            "source": f"Open-Meteo hourly weather, Middlesbrough, winters {', '.join(df['winter'].unique())}"}
 
 
 def simulate(seed=11, days=151, winters=2):
@@ -43,18 +105,9 @@ def simulate(seed=11, days=151, winters=2):
         precip[i] = 0.3 + 1.5 * rng.random() * cl if ev > 0 else 0
         ev -= 1
         dew[i] = air[i] - (0.5 + 3.5 * (1 - cl)) + 0.3 * rng.standard_normal()
-    road = {}
-    for rt in ROUTES:
-        v, R = air[0], np.zeros(H)
-        for i in range(H):
-            hh = i % 24
-            night, day = hh >= 17 or hh <= 8, 10 <= hh <= 15
-            target = air[i] + rt["offset"] + (-2.2 * (1 - cloud[i]) if night else 0) + (2.2 * (1 - cloud[i]) if day else 0)
-            v = v + 0.35 * (target - v) + 0.15 * rng.standard_normal()
-            R[i] = v
-        road[rt["id"]] = R
+    road = estimate_road(air, cloud, rng)
     return {"H": H, "air": air, "cloud": cloud, "precip": precip, "dew": dew, "road": road,
-            "air_err": rng.standard_normal(H) * 1.0, "cloud_err": rng.standard_normal(H) * 0.15}
+            "air_err": rng.standard_normal(H) * 1.0, "cloud_err": rng.standard_normal(H) * 0.15, "source": "simulated winters"}
 
 
 def icy(W, rid, t):
@@ -148,13 +201,21 @@ def replay(W, model, sigma, split, policy, n_gritters):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--gritters", type=int, default=2)
+    p.add_argument("--weather", choices=["real", "synthetic"], default="real")
     a = p.parse_args()
-    W = simulate()
+    W = real() if a.weather == "real" else simulate()
+    print(f"Weather: {W['source']} ({W['H']:,} hours)")
     model, sigma, split, m = train(W)
     print(f"Road temperature 6 h ahead: MAE {m['mae']:.2f} C (persistence {m['mae_persistence']:.2f} C)")
     print(f"Ice warnings: model precision {m['precision']:.0%}, recall {m['recall']:.0%} | "
           f"air-temp rule precision {m['precision_air_rule']:.0%}, recall {m['recall_air_rule']:.0%}")
+    out = {"weather": W["source"], "hours": W["H"], "gritters": a.gritters,
+           "road_temperature": "estimated from air temperature and cloud cover (no road sensors)",
+           **{k: round(float(v), 4) for k, v in m.items()}}
     for pol in ("floodcrew", "current_practice"):
         r = replay(W, model, sigma, split, pol, a.gritters)
+        out[pol] = {**r, "gritted_in_time_pct": round(100 * r["treated_in_time"] / max(1, r["events"]), 1)}
         print(f"{pol:>17}: ice events gritted in time {r['treated_in_time']}/{r['events']} ({r['treated_in_time'] / max(1, r['events']):.0%}), "
               f"hospital + school {r['protected_in_time']}/{r['protected_events']}, gritting runs {r['runs']}")
+    from .train import update_metrics
+    update_metrics("ice", out)

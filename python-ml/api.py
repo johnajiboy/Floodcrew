@@ -12,10 +12,10 @@ from fastapi import FastAPI, Query
 from floodcrew.config import CREWS, GAUGES
 from floodcrew.features import build
 from floodcrew.plan import approvals, plan, site_risk
-from floodcrew.train import OUT, load, warning_levels
+from floodcrew.train import DEFAULT_DATA, OUT, load, warning_levels
 
 app = FastAPI(title="FloodCrew IDSS")
-DATA = "synthetic"   # change to "data/tees_hourly.csv" after downloading real data
+DATA = DEFAULT_DATA   # real EA data once `python -m floodcrew.fetch_ea` has run, otherwise "synthetic"
 DF = load(DATA)
 WARN = warning_levels(DF)
 MODELS = {g["id"]: joblib.load(OUT / f"{g['id']}.joblib") for g in GAUGES}

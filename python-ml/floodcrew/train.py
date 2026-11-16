@@ -1,7 +1,7 @@
 """Train and evaluate the forecast models.
 
+    python -m floodcrew.train                         # real EA data in data/tees_hourly.csv (from fetch_ea)
     python -m floodcrew.train --data synthetic        # simulated Tees data (works offline)
-    python -m floodcrew.train --data data/tees_hourly.csv
 
 For each gauge it trains two models on the first 75% of time and tests on the last 25%:
   * Ridge regression (simple, explainable: every weight can be shown to the officer)
@@ -26,14 +26,27 @@ from .config import GAUGES, TRAIN_FRACTION
 from .features import FEATURES, add_soil_wetness, build
 from .synthetic import simulate
 
-OUT = Path(__file__).resolve().parent.parent / "models"
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "models"
+REAL = ROOT / "data" / "tees_hourly.csv"
+DEFAULT_DATA = "data/tees_hourly.csv" if REAL.exists() else "synthetic"
+
+
+def update_metrics(section: str, values: dict):
+    """Add one section (e.g. 'evaluation', 'ice') to models/metrics.json, keeping what train wrote."""
+    path = OUT / "metrics.json"
+    report = json.loads(path.read_text()) if path.exists() else {}
+    report[section] = values
+    OUT.mkdir(exist_ok=True)
+    path.write_text(json.dumps(report, indent=2))
 
 
 def load(data: str) -> pd.DataFrame:
     if data == "synthetic":
         df = simulate()
     else:
-        df = pd.read_csv(data, index_col=0, parse_dates=True)
+        path = Path(data)
+        df = pd.read_csv(path if path.is_absolute() or path.exists() else ROOT / path, index_col=0, parse_dates=True)
     return add_soil_wetness(df)
 
 
@@ -83,5 +96,5 @@ def main(data: str):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--data", default="synthetic", help="'synthetic' or path to tees_hourly.csv")
+    p.add_argument("--data", default=DEFAULT_DATA, help="path to tees_hourly.csv (default when downloaded) or 'synthetic'")
     main(p.parse_args().data)

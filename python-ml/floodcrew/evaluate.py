@@ -1,5 +1,6 @@
 """Replay every storm in the test period and compare FloodCrew with current practice.
 
+    python -m floodcrew.evaluate --crews 3                    # real data (default once downloaded)
     python -m floodcrew.evaluate --data synthetic --crews 3
 
 Current practice = wait for the official warning (gauge reaches its warning level), then send the nearest crew
@@ -15,7 +16,7 @@ import pandas as pd
 from .config import CREWS, GAUGES, HORIZON_H, SITES, TRAIN_FRACTION
 from .features import build
 from .plan import plan, site_risk, travel_minutes
-from .train import OUT, load, warning_levels
+from .train import DEFAULT_DATA, OUT, load, update_metrics, warning_levels
 
 
 def find_storms(df, split, warn, n=6):
@@ -40,7 +41,8 @@ def run(data, n_crews, protected_weight):
     feats = {g["id"]: build(df, g["id"])[0] for g in GAUGES}
     preds = {gid: pd.Series(models[gid]["ridge"].predict(feats[gid]), index=feats[gid].index) for gid in models}
     totals = {"floodcrew": np.zeros(4), "current_practice": np.zeros(4)}
-    for (start, peak, level) in find_storms(df, split, warn):
+    storms = find_storms(df, split, warn)
+    for (start, peak, level) in storms:
         for policy in totals:
             crews = [{"id": f"c{i}", "name": CREWS[i], "at": "depot", "busy_until": -1, "dest": None} for i in range(n_crews)]
             protected_at, flooded_at = {}, {}
@@ -85,14 +87,20 @@ def run(data, n_crews, protected_weight):
             flooded = [s for s in SITES if s["id"] in flooded_at]
             ok = [s for s in flooded if s["id"] in protected_at]
             totals[policy] += [len(ok), len(flooded), sum(s["protected"] for s in ok), sum(s["protected"] for s in flooded)]
+    result = {"data": data, "crews": n_crews, "protected_weight": protected_weight,
+              "storms": [{"start": str(df.index[s]), "peak": str(df.index[p]), "yarm_peak_m": round(float(lv), 3)} for s, p, lv in storms]}
     for k, (ok, fl, pok, pfl) in totals.items():
         print(f"{k:>17}: flooded sites protected in time {int(ok)}/{int(fl)} ({ok / max(fl, 1):.0%}), "
               f"protected sites {int(pok)}/{int(pfl)} ({pok / max(pfl, 1):.0%})")
+        result[k] = {"sites_protected": int(ok), "sites_flooded": int(fl), "protected_sites_covered": int(pok),
+                     "protected_sites_flooded": int(pfl)}
+    print(f"Storms replayed: {len(storms)}")
+    update_metrics("evaluation", result)
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--data", default="synthetic")
+    p.add_argument("--data", default=DEFAULT_DATA)
     p.add_argument("--crews", type=int, default=3)
     p.add_argument("--protected-weight", type=float, default=2.0)
     a = p.parse_args()

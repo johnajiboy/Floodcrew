@@ -1,0 +1,231 @@
+{
+  "data": "data/tees_hourly.csv",
+  "split": "2025-11-27 18:00:00+00:00",
+  "warn": {
+    "broken": 1.8,
+    "lowmoor": 3.7,
+    "yarm": 1.9,
+    "stockton": 2.85
+  },
+  "gauges": {
+    "broken": {
+      "n_train": 25362,
+      "n_test": 8451,
+      "sigma": 0.08889461261303354,
+      "ridge": {
+        "mae_cm": 3.46,
+        "rmse_cm": 7.28,
+        "r2": 0.9109,
+        "warning_precision": 0.571,
+        "warning_recall": 0.353
+      },
+      "gbm": {
+        "mae_cm": 3.33,
+        "rmse_cm": 8.3,
+        "r2": 0.8842,
+        "warning_precision": 0.36,
+        "warning_recall": 0.265
+      },
+      "persistence": {
+        "mae_cm": 3.55,
+        "rmse_cm": 8.01,
+        "r2": 0.8923,
+        "warning_precision": 0.471,
+        "warning_recall": 0.471
+      },
+      "ridge_weights": {
+        "level_now": 0.116,
+        "rise_3h": 0.0124,
+        "rise_6h": -0.0183,
+        "upstream_level": 0.116,
+        "upstream_rise_3h": 0.0124,
+        "rain_6h": 0.0419,
+        "rain_24h": -0.0062,
+        "rain_fc_6h": 0.0031,
+        "soil_wetness": -0.0013,
+        "rain_x_wet": 0.0032
+      }
+    },
+    "lowmoor": {
+      "n_train": 25362,
+      "n_test": 8451,
+      "sigma": 0.13480664285332733,
+      "ridge": {
+        "mae_cm": 6.4,
+        "rmse_cm": 11.36,
+        "r2": 0.9516,
+        "warning_precision": 0.933,
+        "warning_recall": 0.424
+      },
+      "gbm": {
+        "mae_cm": 2.15,
+        "rmse_cm": 4.91,
+        "r2": 0.9909,
+        "warning_precision": 0.862,
+        "warning_recall": 0.758
+      },
+      "persistence": {
+        "mae_cm": 7.34,
+        "rmse_cm": 21.1,
+        "r2": 0.833,
+        "warning_precision": 0.455,
+        "warning_recall": 0.455
+      },
+      "ridge_weights": {
+        "level_now": 0.384,
+        "rise_3h": 0.1162,
+        "rise_6h": -0.037,
+        "upstream_level": 0.1761,
+        "upstream_rise_3h": 0.1043,
+        "rain_6h": 0.0083,
+        "rain_24h": 0.0379,
+        "rain_fc_6h": -0.0065,
+        "soil_wetness": -0.0159,
+        "rain_x_wet": 0.0098
+      }
+    },
+    "yarm": {
+      "n_train": 25362,
+      "n_test": 8451,
+      "sigma": 0.08817333898587205,
+      "ridge": {
+        "mae_cm": 3.63,
+        "rmse_cm": 7.0,
+        "r2": 0.8513,
+        "warning_precision": 0.871,
+        "warning_recall": 0.692
+      },
+      "gbm": {
+        "mae_cm": 2.97,
+        "rmse_cm": 7.17,
+        "r2": 0.8439,
+        "warning_precision": 0.875,
+        "warning_recall": 0.538
+      },
+      "persistence": {
+        "mae_cm": 3.84,
+        "rmse_cm": 10.08,
+        "r2": 0.6915,
+        "warning_precision": 0.538,
+        "warning_recall": 0.538
+      },
+      "ridge_weights": {
+        "level_now": 0.1723,
+        "rise_3h": -0.0185,
+        "rise_6h": -0.0147,
+        "upstream_level": 0.0353,
+        "upstream_rise_3h": 0.0956,
+        "rain_6h": 0.005,
+        "rain_24h": 0.0199,
+        "rain_fc_6h": -0.0016,
+        "soil_wetness": -0.0024,
+        "rain_x_wet": 0.0063
+      }
+    },
+    "stockton": {
+      "n_train": 24561,
+      "n_test": 7591,
+      "sigma": 0.03868459395704786,
+      "ridge": {
+        "mae_cm": 2.14,
+        "rmse_cm": 3.75,
+        "r2": 0.5748,
+        "warning_precision": 0.4,
+        "warning_recall": 0.16
+      },
+      "gbm": {
+        "mae_cm": 1.95,
+        "rmse_cm": 3.72,
+        "r2": 0.5812,
+        "warning_precision": 0.444,
+        "warning_recall": 0.16
+      },
+      "persistence": {
+        "mae_cm": 1.94,
+        "rmse_cm": 4.4,
+        "r2": 0.4145,
+        "warning_precision": 0.0,
+        "warning_recall": 0.0
+      },
+      "ridge_weights": {
+        "level_now": 0.0479,
+        "rise_3h": -0.0035,
+        "rise_6h": -0.036,
+        "upstream_level": -0.0036,
+        "upstream_rise_3h": 0.0039,
+        "rain_6h": 0.0025,
+        "rain_24h": -0.0041,
+        "rain_fc_6h": 0.0013,
+        "soil_wetness": 0.0035,
+        "rain_x_wet": 0.0003
+      }
+    }
+  },
+  "evaluation": {
+    "data": "data/tees_hourly.csv",
+    "crews": 3,
+    "protected_weight": 2.0,
+    "storms": [
+      {
+        "start": "2025-12-09 07:00:00+00:00",
+        "peak": "2025-12-10 03:00:00+00:00",
+        "yarm_peak_m": 1.853
+      },
+      {
+        "start": "2026-01-22 10:00:00+00:00",
+        "peak": "2026-01-23 16:00:00+00:00",
+        "yarm_peak_m": 2.376
+      },
+      {
+        "start": "2026-02-11 05:00:00+00:00",
+        "peak": "2026-02-12 03:00:00+00:00",
+        "yarm_peak_m": 2.086
+      },
+      {
+        "start": "2026-03-12 10:00:00+00:00",
+        "peak": "2026-03-13 09:00:00+00:00",
+        "yarm_peak_m": 2.505
+      }
+    ],
+    "floodcrew": {
+      "sites_protected": 4,
+      "sites_flooded": 11,
+      "protected_sites_covered": 3,
+      "protected_sites_flooded": 4
+    },
+    "current_practice": {
+      "sites_protected": 7,
+      "sites_flooded": 11,
+      "protected_sites_covered": 1,
+      "protected_sites_flooded": 4
+    }
+  },
+  "ice": {
+    "weather": "Open-Meteo hourly weather, Middlesbrough, winters 2024/25, 2025/26",
+    "hours": 7248,
+    "gritters": 2,
+    "road_temperature": "estimated from air temperature and cloud cover (no road sensors)",
+    "mae": 0.8382,
+    "mae_persistence": 1.9214,
+    "precision": 0.3152,
+    "recall": 0.4915,
+    "precision_air_rule": 0.1848,
+    "recall_air_rule": 0.5763,
+    "floodcrew": {
+      "events": 17,
+      "treated_in_time": 9,
+      "protected_events": 10,
+      "protected_in_time": 5,
+      "runs": 36,
+      "gritted_in_time_pct": 52.9
+    },
+    "current_practice": {
+      "events": 17,
+      "treated_in_time": 6,
+      "protected_events": 10,
+      "protected_in_time": 5,
+      "runs": 52,
+      "gritted_in_time_pct": 35.3
+    }
+  }
+}

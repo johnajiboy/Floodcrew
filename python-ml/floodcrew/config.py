@@ -1,17 +1,17 @@
 """Gauges, sites and settings.
 
-Gauges are listed upstream -> downstream. After running `python -m floodcrew.fetch_ea discover`,
-paste the real Environment Agency station references into `ea_station` below.
+Gauges are listed upstream -> downstream. `ea_station` is the Environment Agency station reference
+(found with `python -m floodcrew.fetch_ea discover`).
 """
 HORIZON_H = 6          # forecast horizon in hours
 TRAIN_FRACTION = 0.75  # time-based split: first 75% train, last 25% test
 
 GAUGES = [
-    # id, display name, EA station reference (fill in after discovery), synthetic settings
-    {"id": "broken",   "name": "Broken Scar", "ea_station": "", "base": 0.55, "gain": 0.050, "lag": 3,  "k": 6},
-    {"id": "lowmoor",  "name": "Low Moor",    "ea_station": "", "base": 0.70, "gain": 0.054, "lag": 6,  "k": 8},
-    {"id": "yarm",     "name": "Yarm",        "ea_station": "", "base": 0.85, "gain": 0.058, "lag": 9,  "k": 10},
-    {"id": "stockton", "name": "Stockton",    "ea_station": "", "base": 1.10, "gain": 0.050, "lag": 11, "k": 11},
+    # id, display name, EA station reference, synthetic settings
+    {"id": "broken",   "name": "Broken Scar", "ea_station": "F3501", "base": 0.55, "gain": 0.050, "lag": 3,  "k": 6},
+    {"id": "lowmoor",  "name": "Low Moor",    "ea_station": "F3606", "base": 0.70, "gain": 0.054, "lag": 6,  "k": 8},
+    {"id": "yarm",     "name": "Yarm",        "ea_station": "L3602", "base": 0.85, "gain": 0.058, "lag": 9,  "k": 10},
+    {"id": "stockton", "name": "Stockton",    "ea_station": "L3907", "base": 1.10, "gain": 0.050, "lag": 11, "k": 11},
 ]
 
 # Rainfall: EA rain gauges within this radius are averaged into one catchment series
