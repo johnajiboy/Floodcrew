@@ -114,7 +114,7 @@ Road temperature 6 h ahead: MAE 0.84 °C (persistence 1.92 °C), the same for ev
   is shuffled). The upstream level at Low Moor matters most (+7.3 cm), then the current level (+3.6 cm).
 
 - `ice_night.png`: 28 Jan 2026 on the Yarm school road (2 gritters), the protected-route ice event that FloodCrew
-  gritted in time and the fixed schedule did not: estimated road temperature, the 6-hour forecast, a 0.5 °C line, and
+  gritted in time and the fixed schedule did not: estimated road temperature, the 6-hour forecast, the 0 °C ice threshold (wet road), and
   when each policy first had salt down (FloodCrew 19:00, before ice formed at 20:00; fixed schedule 22:00).
 
 ![Largest storm at Yarm](docs/figures/yarm_storm.png)

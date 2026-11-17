@@ -6,7 +6,7 @@
                    and the hour FloodCrew and current practice first sent a crew (3 crews, protected weight 2.0)
   importance.png   permutation importance of the Yarm boosting model on the test period (increase in MAE)
   ice_night.png    the night in the ice test period where FloodCrew gritted a protected route in time and the fixed
-                   schedule did not (2 gritters): estimated road temperature, the 6-hour forecast, the 0.5 C threshold,
+                   schedule did not (2 gritters): estimated road temperature, the 6-hour forecast, the 0 C ice threshold,
                    and when each policy first had salt down on that route
 """
 import argparse
@@ -100,7 +100,7 @@ def importance_figure(df, models, split, repeats=10):
     print("importance.png (MAE increase, cm):\n" + imp["mean"][::-1].round(2).to_string())
 
 
-def ice_figure(n_gritters=2, threshold=0.5):
+def ice_figure(n_gritters=2, threshold=0.0):
     W = ice.real()
     model, sigma, split, _ = ice.train(W)
     times = pd.to_datetime(pd.read_csv(ice.WEATHER_CSV)["time"])
@@ -125,7 +125,7 @@ def ice_figure(n_gritters=2, threshold=0.5):
     ax.plot(times[hours], W["road"][rid][a:b], color=ACTUAL, lw=2, label=f"Estimated road temperature ({name})")
     ax.plot(times[hours], [fc[t] for t in hours], color=FORECAST, lw=2, ls=(0, (4, 2)),
             label=f"Road temperature forecast (made {ice.HZ} h earlier)")
-    ax.axhline(threshold, color=MUTED, lw=1.2, ls=(0, (1, 2)), label=f"{threshold} \u00b0C ice threshold")
+    ax.axhline(threshold, color=MUTED, lw=1.2, ls=(0, (1, 2)), label="Ice threshold (0 \u00b0C, wet road)")
     for p, colour, label in [("floodcrew", FLOODCREW, "FloodCrew"), ("current_practice", PRACTICE, "Fixed schedule")]:
         if first[p] is not None:
             ax.axvline(times[first[p]], color=colour, lw=1.5, label=f"{label} first gritted ({times[first[p]]:%H:%M}, salt down)")
