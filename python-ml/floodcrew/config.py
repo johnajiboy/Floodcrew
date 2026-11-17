@@ -18,6 +18,11 @@ GAUGES = [
     {"id": "stockton", "name": "Stockton",    "ea_station": "L3907", "ea_alert": 3.20, "ea_property": 3.70, "base": 1.10, "gain": 0.050, "lag": 11, "k": 11},
 ]
 
+# Plausible level range (m) per gauge for cleaning: EA minOnRecord - 0.1 m to maxOnRecord + 0.5 m
+# (stageScale in the flood-monitoring API, checked 2026-11-17). Readings outside are dropped by fetch_ea.
+PLAUSIBLE = {"broken": (0.20, 3.80), "lowmoor": (0.10, 6.80), "yarm": (0.05, 4.60), "stockton": (2.05, 4.70)}
+SPIKE_M = 0.5   # a 15-minute reading more than this from both neighbours is dropped as a spike
+
 # Rainfall: EA rain gauges within this radius are averaged into one catchment series
 RAIN_SEARCH = {"lat": 54.52, "long": -1.45, "dist_km": 25}
 

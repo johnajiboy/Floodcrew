@@ -67,13 +67,17 @@ def main(data: str):
     report = {"data": data, "split": str(split), "warn": warn,
               "warn_source": "simulated: 99.3rd percentile" if df.attrs.get("synthetic") else "official EA flood alert level (top of normal range)",
               "planner_model": PLANNER_MODEL, "gauges": {}}
-    rows = []
+    rows, settings, iters = [], None, {}
     for g in GAUGES:
         gid = g["id"]
         X, y = build(df, gid)
         tr, te = X.index < split, X.index >= split
         ridge = make_pipeline(StandardScaler(), Ridge(alpha=1.0)).fit(X[tr], y[tr])
         gbm = HistGradientBoostingRegressor(max_iter=300, learning_rate=0.06, random_state=0).fit(X[tr], y[tr])
+        settings = settings or (ridge[-1].alpha, {k: v for k, v in gbm.get_params().items()
+                                                   if k in ("loss", "learning_rate", "max_iter", "max_leaf_nodes", "max_depth",
+                                                            "min_samples_leaf", "l2_regularization", "early_stopping", "random_state")})
+        iters[g["name"]] = gbm.n_iter_   # boosting rounds actually run (early stopping on 10% of the training rows)
         sigma = float(np.std(y[tr] - ridge.predict(X[tr])))
         truth, persist = y[te].to_numpy(), X.loc[te, "level_now"].to_numpy()
         actual_warn = truth >= warn[gid]
@@ -100,6 +104,9 @@ def main(data: str):
     table = pd.DataFrame(rows, columns=["gauge", "model", "MAE (cm)", "R2", "warning precision", "warning recall"])
     print(table.to_string(index=False, na_rep="n/a"))
     print("Warning levels (m): " + ", ".join(f"{g['name']} {warn[g['id']]:.2f}" for g in GAUGES) + f"  [{report['warn_source']}]")
+    print(f"Ridge: alpha={settings[0]} (features standardised).  Gradient boosting (HistGradientBoostingRegressor): "
+          + ", ".join(f"{k}={v}" for k, v in settings[1].items())
+          + "\nBoosting rounds used after early stopping: " + ", ".join(f"{k} {v}" for k, v in iters.items()))
     print(f"\nTrain/test split at {split}. Models and metrics saved to {OUT}/")
 
 

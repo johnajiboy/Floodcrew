@@ -44,7 +44,7 @@ To run offline on simulated data instead: `--data synthetic` for train/evaluate 
 
 | Data | Source | Detail |
 |---|---|---|
-| River levels | Environment Agency **Hydrology API** (`environment.data.gov.uk/hydrology`) | Quality-checked 15-minute level, hourly mean. Broken Scar `F3501`, Low Moor `F3606`, Yarm `L3602`, Stockton `L3907`. Readings flagged Suspect/Missing/Rejected are dropped. |
+| River levels | Environment Agency **Hydrology API** (`environment.data.gov.uk/hydrology`) | Quality-checked 15-minute level, hourly mean. Broken Scar `F3501`, Low Moor `F3606`, Yarm `L3602`, Stockton `L3907`. Readings flagged Suspect/Missing/Rejected are dropped, then readings outside each gauge's plausible range (EA record low − 0.1 m to record high + 0.5 m, `PLAUSIBLE` in `config.py`) and single-reading spikes more than 0.5 m from both neighbours. On the 2015–2026 data this removed 3 spikes (1 at Yarm, 2 at Stockton) and nothing outside the ranges. Gaps up to 6 hours are interpolated. |
 | Newest readings | Environment Agency **real-time flood-monitoring API** (`environment.data.gov.uk/flood-monitoring`) | Only keeps about the last 28 days, so it tops up readings the Hydrology service has not published yet. |
 | Rainfall | EA Hydrology API, 15-minute rain gauges | Up to 6 nearest gauges within 25 km of Yarm with at least 60% hourly coverage, averaged each hour (currently Darlington Lingfield Way, East Cowton, Harpington Hill Farm, Low Moor Farm, Middlesbrough Stewart Park, Romanby). |
 | Winter weather | **Open-Meteo historical weather API** (`archive-api.open-meteo.com`, free, no key) | Hourly air temperature, dew point, precipitation and cloud cover for Middlesbrough, winters 2024/25 and 2025/26 (1 Nov to 31 Mar), cached in `data/middlesbrough_weather.csv`. |
@@ -73,8 +73,8 @@ Run order: `train`, then `evaluate` and `ice` (train rewrites the file).
 |---|---|---|---|---|---|---|---|---|---|
 | Broken Scar | 2.50 m, official EA | 15 | 3.74 cm | 3.24 cm | 3.90 cm | 0% | 0% | 0% | boosting |
 | Low Moor | 4.50 m, official EA | 68 | 7.25 cm | 2.43 cm | 8.21 cm | 48.5% | 85.3% | 45.6% | boosting |
-| Yarm | 1.80 m, official EA | 222 | 3.67 cm | 3.12 cm | 4.41 cm | 68.0% | 61.7% | 55.9% | boosting |
-| Stockton | 3.20 m, official EA | 10 | 2.04 cm | 1.78 cm | 2.18 cm | 0% | 0% | 0% | boosting |
+| Yarm | 1.80 m, official EA | 222 | 3.66 cm | 3.12 cm | 4.40 cm | 68.0% | 61.7% | 55.9% | boosting |
+| Stockton | 3.20 m, official EA | 10 | 2.03 cm | 1.78 cm | 2.18 cm | 0% | 0% | 0% | boosting |
 
 Recall is reported as "no warning events" for any gauge that never reaches its threshold in the test period
 (none at present).

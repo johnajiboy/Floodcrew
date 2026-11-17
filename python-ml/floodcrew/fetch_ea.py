@@ -25,7 +25,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from .config import GAUGES, RAIN_SEARCH
+from .config import GAUGES, PLAUSIBLE, RAIN_SEARCH, SPIKE_M
 
 REALTIME = "https://environment.data.gov.uk/flood-monitoring"
 HYDROLOGY = "https://environment.data.gov.uk/hydrology"
@@ -136,6 +136,16 @@ def series(station_ref, kind, start, end, name):
     return s
 
 
+def clean_levels(s, lo, hi, spike=SPIKE_M):
+    """Drop readings outside the plausible range, then single-reading spikes (more than `spike` m from both neighbours).
+    Returns the cleaned series and the number removed by each rule."""
+    ok = s.between(lo, hi)
+    s, n_range = s[ok], int((~ok).sum())
+    prev, nxt = (s - s.shift(1)).abs(), (s - s.shift(-1)).abs()
+    is_spike = (prev > spike) & (nxt > spike)
+    return s[~is_spike], n_range, int(is_spike.sum())
+
+
 def rain_stations():
     items = get(f"{HYDROLOGY}/id/stations", observedProperty="rainfall", lat=RAIN_SEARCH["lat"], long=RAIN_SEARCH["long"],
                 dist=RAIN_SEARCH["dist_km"], _limit=100)["items"]
@@ -158,10 +168,15 @@ def download(start, end):
         sys.exit(f"Add EA station references to config.py first for: {', '.join(missing)} (run 'discover').")
     DATA.mkdir(exist_ok=True)
     print(f"Downloading {start} to {end}\nRiver levels (15-minute):")
-    out = {}
+    out, removed = {}, {}
     for g in GAUGES:
         s = series(g["ea_station"], "level", start, end, g["id"])
+        s, n_range, n_spike = clean_levels(s, *PLAUSIBLE[g["id"]])
+        removed[g["name"]] = (n_range, n_spike)
         out[g["id"]] = s.resample("1h").mean().interpolate(limit=6, limit_area="inside")
+    print("Cleaning (15-minute readings removed):")
+    for name, (n_range, n_spike) in removed.items():
+        print(f"  {name:<12} outside plausible range {n_range:>3}, spikes (> {SPIKE_M} m from both neighbours) {n_spike:>3}")
     print(f"Rainfall (15-minute), up to {N_RAIN} nearest gauges within {RAIN_SEARCH['dist_km']} km:")
     rains, hours = [], pd.date_range(start, end, freq="1h", tz="UTC")
     for st in rain_stations():
