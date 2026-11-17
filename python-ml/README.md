@@ -105,7 +105,7 @@ Road temperature 6 h ahead: MAE 0.84 °C (persistence 1.92 °C), the same for ev
 
 ### Figures
 
-`python -m floodcrew.figures` (after `train`) writes two figures to `docs/figures/`:
+`python -m floodcrew.figures` (after `train`) writes three figures to `docs/figures/`:
 
 - `yarm_storm.png`: the largest test-period storm at Yarm (peak 3.36 m, 28 Dec 2023): actual level, the boosting
   6-hour forecast plotted at the hour it is for, the EA warning level, and the first crew dispatch (3 crews, weight 2.0).
@@ -113,8 +113,13 @@ Road temperature 6 h ahead: MAE 0.84 °C (persistence 1.92 °C), the same for ev
 - `importance.png`: permutation importance of the Yarm boosting model on the test period (rise in MAE when a feature
   is shuffled). The upstream level at Low Moor matters most (+7.3 cm), then the current level (+3.6 cm).
 
+- `ice_night.png`: 28 Jan 2026 on the Yarm school road (2 gritters), the protected-route ice event that FloodCrew
+  gritted in time and the fixed schedule did not: estimated road temperature, the 6-hour forecast, a 0.5 °C line, and
+  when each policy first had salt down (FloodCrew 19:00, before ice formed at 20:00; fixed schedule 22:00).
+
 ![Largest storm at Yarm](docs/figures/yarm_storm.png)
 ![Permutation importance, Yarm](docs/figures/importance.png)
+![Ice night, Yarm school road](docs/figures/ice_night.png)
 
 ## 5. What to report
 

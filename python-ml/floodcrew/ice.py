@@ -155,7 +155,8 @@ def dist_min(rt):
     return np.hypot(rt["x"] - DEPOT["x"], rt["y"] - DEPOT["y"]) * 0.03 / 30 * 60
 
 
-def replay(W, model, sigma, split, policy, n_gritters):
+def replay(W, model, sigma, split, policy, n_gritters, log=None):
+    """log (optional list) collects ("grit", route, dispatch hour, salt-down hour) and ("event", route, hour, in time)."""
     treated = {rt["id"]: -99 for rt in ROUTES}
     busy = [0] * n_gritters
     runs = ev_all = ev_ok = prot_all = prot_ok = 0
@@ -179,17 +180,23 @@ def replay(W, model, sigma, split, policy, n_gritters):
                 for i, j in zip(rows, cols):
                     if value[i, j] > 0:
                         busy[free[i]] = t + RUN_H; treated[risks[j][0]["id"]] = t + RUN_H; runs += 1
+                        if log is not None:
+                            log.append(("grit", risks[j][0]["id"], t, t + RUN_H))
         elif t % 24 in (18, 4):   # current practice: precautionary runs when forecast air temperature is 1 C or below
             if (W["air"][t + 1:t + 15] + W["air_err"][t]).min() <= 1:
                 for k, rid in enumerate(["hosp", "bus", "school", "hill"]):
                     g = k % n_gritters
                     start = max(t, busy[g]); busy[g] = start + RUN_H; treated[rid] = start + RUN_H; runs += 1
+                    if log is not None:
+                        log.append(("grit", rid, start, start + RUN_H))
         for rt in ROUTES:
             rid = rt["id"]
             if icy(W, rid, t):
                 if dry[rid] >= 6:   # a new ice event starts
                     ok = active(rid, t) and treated[rid] <= t
                     ev_all += 1; ev_ok += ok
+                    if log is not None:
+                        log.append(("event", rid, t, bool(ok)))
                     if rt["protected"]:
                         prot_all += 1; prot_ok += ok
                 dry[rid] = 0
